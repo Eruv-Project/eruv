@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eruv.local/contracts/fault.schema.json",
+  "title": "Pi agent equipment fault",
+  "description": "Sent to POST /api/device/v1/faults when the OTDR does not answer, returns an error status, or the socket fails. Spooled like results. See pi-server-api.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seq", "occurred_at", "queued_s", "agent_version", "kind", "detail"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "queued_s": { "type": "number", "minimum": 0 },
+    "agent_version": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["otdr_unreachable", "otdr_timeout", "otdr_error_status", "otdr_socket", "otdr_protocol"]
+    },
+    "detail": { "type": "string" },
+    "status_code": { "type": ["integer", "null"], "description": "OTDR response status code (0xA0000000 frame) when kind is otdr_error_status" }
+  }
+}

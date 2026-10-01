@@ -1,0 +1,29 @@
+{
+  "seq": 1024,
+  "measured_at": "2026-09-30T10:15:00Z",
+  "queued_s": 0.4,
+  "agent_version": "1.0.0",
+  "otdr": { "firmware": "4.0 2024-03-11", "device": "GL3800M" },
+  "params": {
+    "wavelength_nm": 1550,
+    "range_m": 60000,
+    "pulse_width_ns": 640,
+    "measure_time_ms": 30000,
+    "group_index": 1.4685,
+    "sample_rate_hz": 50000000,
+    "end_threshold_db": 5.0,
+    "non_reflect_threshold_db": 0.0,
+    "test_mode": 1,
+    "test_method": 1
+  },
+  "fiber_length_m": 47210.4,
+  "link_loss_db": 10.2,
+  "link_attenuation_db_per_km": 0.21,
+  "end_event_distance_m": 47210.4,
+  "events": [
+    { "index": 0, "distance_m": 0.0, "type_code": 0, "type": "start", "reflect_loss_db": -45.1, "insert_loss_db": null, "atten_coef_db_per_km": null, "total_loss_db": null },
+    { "index": 490, "distance_m": 1000.3, "type_code": 1, "type": "reflective", "reflect_loss_db": -52.0, "insert_loss_db": 0.4, "atten_coef_db_per_km": 0.2, "total_loss_db": 0.6 },
+    { "index": 23126, "distance_m": 47210.4, "type_code": 3, "type": "end", "reflect_loss_db": -30.5, "insert_loss_db": null, "atten_coef_db_per_km": 0.21, "total_loss_db": 10.2 }
+  ],
+  "pi_health": { "uptime_s": 86400, "cpu_temp_c": 52.3, "disk_free_mb": 20480 }
+}

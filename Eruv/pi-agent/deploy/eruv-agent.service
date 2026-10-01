@@ -1,0 +1,15 @@
+[Unit]
+Description=Eruv fiber monitoring agent (OTDR driver and server uplink)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/opt/eruv-agent/venv/bin/python -m eruv_agent --config /etc/eruv-agent/agent.yaml
+Restart=always
+RestartSec=5
+# Logs go to stdout/stderr, collected by journald: journalctl -u eruv-agent
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+{
+  "sent_at": "2026-09-30T10:15:10Z",
+  "agent_version": "1.0.0",
+  "otdr_connected": true,
+  "test_running": false,
+  "uptime_s": 86410,
+  "cpu_temp_c": 52.1,
+  "spool_depth": 0
+}

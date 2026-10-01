@@ -1,0 +1,23 @@
+# Caddy: HTTPS in front of the api container. WebSocket upgrades (/ws) pass
+# through reverse_proxy automatically.
+#
+# SITE ADDRESS: 203.0.113.10 is a placeholder documentation IP. Replace it with
+# the server's real address (README "Where to put the AWS address"), keeping it
+# identical to PUBLIC_BASE_URL in server/.env.
+#
+# Production: use a DOMAIN NAME here (e.g. eruv.example.org) and delete the
+# "tls internal" line. Caddy then gets a public Let's Encrypt certificate by
+# itself (ports 80 and 443 must be open). iOS release builds and the Pi agent
+# require a publicly trusted certificate.
+#
+# Development on a bare IP: a public CA will normally not issue a certificate
+# for a bare IP, so "tls internal" makes Caddy sign one with its own local CA.
+# Phones and the Pi do not trust that CA; see docs/runbook.md "Development on
+# a bare IP" for the plain-HTTP alternative.
+
+203.0.113.10 {
+	tls internal
+
+	encode gzip
+	reverse_proxy api:8000
+}

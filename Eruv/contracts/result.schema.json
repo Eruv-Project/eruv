@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eruv.local/contracts/result.schema.json",
+  "title": "OTDR test result",
+  "description": "One completed OTDR averaging test, sent by the Pi agent to POST /api/device/v1/results. See pi-server-api.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "seq",
+    "measured_at",
+    "queued_s",
+    "agent_version",
+    "params",
+    "fiber_length_m",
+    "end_event_distance_m",
+    "events",
+    "pi_health"
+  ],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "measured_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Pi wall-clock time when the test started, ISO-8601 UTC. For display only; never used for ordering."
+    },
+    "queued_s": { "type": "number", "minimum": 0 },
+    "agent_version": { "type": "string", "minLength": 1 },
+    "otdr": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firmware": { "type": ["string", "null"] },
+        "device": { "type": ["string", "null"] }
+      }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wavelength_nm",
+        "range_m",
+        "pulse_width_ns",
+        "measure_time_ms",
+        "group_index",
+        "sample_rate_hz"
+      ],
+      "properties": {
+        "wavelength_nm": { "type": "integer", "minimum": 1 },
+        "range_m": { "type": "integer", "minimum": 0 },
+        "pulse_width_ns": { "type": "integer", "minimum": 0 },
+        "measure_time_ms": { "type": "integer", "minimum": 0 },
+        "group_index": { "type": "number", "exclusiveMinimum": 1, "exclusiveMaximum": 2 },
+        "sample_rate_hz": { "type": "integer", "minimum": 1 },
+        "end_threshold_db": { "type": ["number", "null"] },
+        "non_reflect_threshold_db": { "type": ["number", "null"] },
+        "test_mode": { "type": ["integer", "null"], "description": "1 averaging, 2 real-time" },
+        "test_method": { "type": ["integer", "null"], "description": "0 automatic, 1 manual" }
+      }
+    },
+    "fiber_length_m": { "type": ["number", "null"] },
+    "link_loss_db": { "type": ["number", "null"] },
+    "link_attenuation_db_per_km": { "type": ["number", "null"] },
+    "end_event_distance_m": {
+      "type": ["number", "null"],
+      "description": "Distance of the last end event (type 3), null if the OTDR reported none."
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "distance_m", "type_code", "type"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "distance_m": { "type": "number" },
+          "type_code": { "type": "integer", "minimum": 0 },
+          "type": {
+            "type": "string",
+            "enum": ["start", "reflective", "non_reflective", "end", "unknown"]
+          },
+          "reflect_loss_db": { "type": ["number", "null"] },
+          "insert_loss_db": { "type": ["number", "null"] },
+          "atten_coef_db_per_km": { "type": ["number", "null"] },
+          "total_loss_db": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "pi_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uptime_s"],
+      "properties": {
+        "uptime_s": { "type": "number", "minimum": 0 },
+        "cpu_temp_c": { "type": ["number", "null"] },
+        "disk_free_mb": { "type": ["number", "null"] }
+      }
+    },
+    "curve_b64": {
+      "type": "string",
+      "description": "Reserved for the deferred curve viewer. Not sent in v1."
+    }
+  }
+}

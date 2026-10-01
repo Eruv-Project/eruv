@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eruv.local/contracts/heartbeat.schema.json",
+  "title": "Pi agent heartbeat",
+  "description": "Sent every 10 s to POST /api/device/v1/heartbeat. Not spooled. See pi-server-api.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sent_at", "agent_version", "otdr_connected", "uptime_s"],
+  "properties": {
+    "sent_at": { "type": "string", "format": "date-time" },
+    "agent_version": { "type": "string", "minLength": 1 },
+    "otdr_connected": { "type": "boolean" },
+    "test_running": { "type": "boolean" },
+    "uptime_s": { "type": "number", "minimum": 0 },
+    "cpu_temp_c": { "type": ["number", "null"] },
+    "spool_depth": { "type": "integer", "minimum": 0 }
+  }
+}

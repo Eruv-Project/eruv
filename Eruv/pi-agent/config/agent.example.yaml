@@ -1,0 +1,39 @@
+# Eruv agent config. Installed on the Pi as /etc/eruv-agent/agent.yaml
+# (owner root, mode 0600: it holds the device key).
+
+server:
+  # Replace with the AWS server's public HTTPS origin (placeholder documentation IP).
+  base_url: https://203.0.113.10
+  # The device API key the admin received when creating this city's device.
+  device_key: CHANGE_ME
+  # Only for local development against a plain-http server. Never true on a Pi.
+  allow_insecure_dev: false
+  request_timeout_s: 8
+
+otdr:
+  host: 192.168.1.249
+  port: 5000
+  keepalive_idle_s: 20          # 0x10000003 after 20 s idle (module resets at 60 s)
+  result_timeout_margin_s: 60   # final data due within measure time + 60 s
+  connect_timeout_s: 10
+  reconnect_initial_s: 1
+  reconnect_max_s: 60
+
+# Test parameters (averaging mode, manual method, refresh disabled).
+test:
+  wavelength_nm: 1550
+  range_m: 60000
+  pulse_width_ns: 640
+  measure_time_ms: 30000
+  group_index: 1.4685
+  end_threshold_db: 5.0
+  non_reflect_threshold_db: 0.0   # 0 = automatic
+
+schedule:
+  cadence_s: 60       # from one test start to the next
+  heartbeat_s: 10
+  uplink_retry_s: 5
+
+spool:
+  path: /var/lib/eruv-agent/spool.sqlite3
+  capacity: 2000

@@ -1,0 +1,85 @@
+# Eruv monitoring server on one EC2 instance (KTD2). Run from server/:
+#
+#   cp .env.example .env     # then fill it in (see docs/runbook.md)
+#   docker compose up -d --build
+#
+# Services: api (FastAPI, one worker), db (PostgreSQL), backup (nightly
+# pg_dump to ./backups) and caddy (HTTPS on 80/443, reverse proxy to api).
+# Only caddy publishes ports; api and db are reachable only inside this network.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      additional_contexts:
+        contracts: ../contracts
+    image: eruv-server:latest
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eruv}
+      POSTGRES_DB: ${POSTGRES_DB:-eruv}
+      # Read only when the volume is first initialised; see the runbook.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in server/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Nightly custom-format dump at 01:00 UTC to ./backups/eruv-YYYY-MM-DD.dump.
+  # Restore: pg_restore --clean --if-exists -d eruv <file> (runbook).
+  backup:
+    image: postgres:16-alpine
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-eruv}
+      PGDATABASE: ${POSTGRES_DB:-eruv}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in server/.env}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          now=$$(date -u +%s)
+          sleep $$(( (86400 + 3600 - now % 86400) % 86400 + 1 ))
+          file=/backups/eruv-$$(date -u +%F).dump
+          if pg_dump -Fc -f "$$file.tmp"; then mv "$$file.tmp" "$$file"; echo "backup ok: $$file"
+          else rm -f "$$file.tmp"; echo "backup FAILED" >&2; fi
+        done
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,14 @@
+# Build context is server/. Keep secrets, local state and caches out of the image.
+.env
+.venv/
+venv/
+backups/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+*.db
+*.sqlite3
+tests/

@@ -1,0 +1,9 @@
+{
+  "seq": 1025,
+  "occurred_at": "2026-09-30T10:16:31Z",
+  "queued_s": 0.2,
+  "agent_version": "1.0.0",
+  "kind": "otdr_timeout",
+  "detail": "no final data (0x90000000) within 90 s of test start",
+  "status_code": null
+}

@@ -1,0 +1,182 @@
+<!doctype html>
+<!--
+  Eruv ring map (R15, R17; KTD4). Loaded by src/components/EruvMap.tsx inside
+  react-native-webview. After editing, run `npm run build:map` to regenerate
+  src/components/mapHtml.generated.ts (a test fails while they differ).
+
+  Leaflet 1.9.4 comes from unpkg with Subresource Integrity; the base map needs the
+  network for OpenStreetMap tiles anyway. The WebView loads this page under the API
+  origin, so tile requests carry a Referer, and adds an app name to the User-Agent
+  (OpenStreetMap tile usage policy).
+
+  Bridge: the app calls window.eruvReceive(message) (also accepted as a
+  window/document "message" event). Message:
+    { "type": "render", "poles": [{number, lat, lon}], "view": "break" | "ring",
+      "breakPoint": null | { "lat", "lon", "poles": [bounding pole numbers] } }
+  The page posts {"type": "ready"} to the app when it can receive.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <style>
+      html, body, #map { height: 100%; margin: 0; padding: 0; background: #eef0f3; }
+      .pole-label {
+        font: 600 11px/1 -apple-system, Roboto, sans-serif;
+        color: #1f5fa8;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 3px;
+        padding: 2px 3px;
+        white-space: nowrap;
+      }
+      .pole-label.strong { color: #fff; background: #b3261e; font-size: 13px; }
+      .break-x { background: none; border: none; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      (function () {
+        var LABEL_MIN_PX = 24; // two labels closer than this would overlap
+        var BREAK_ZOOM = 17;
+        var BLUE = '#1f5fa8';
+        var RED = '#b3261e';
+
+        function post(message) {
+          if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(message));
+        }
+
+        var map = L.map('map', { zoomControl: true });
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+        map.setView([31.5, 34.9], 8);
+
+        var shapes = L.layerGroup().addTo(map);
+        var labels = L.layerGroup().addTo(map);
+        var current = null;
+
+        function highlighted(number) {
+          return !!(current && current.breakPoint && current.breakPoint.poles.indexOf(number) >= 0);
+        }
+
+        function label(pole, strong) {
+          return L.marker([pole.lat, pole.lon], {
+            interactive: false,
+            keyboard: false,
+            icon: L.divIcon({
+              className: 'pole-label' + (strong ? ' strong' : ''),
+              html: String(pole.number),
+              iconSize: null,
+              iconAnchor: [-6, 20],
+            }),
+          });
+        }
+
+        // Label as many poles as fit without overlapping at this zoom. The
+        // bounding poles of a break are always labelled.
+        function relabel() {
+          labels.clearLayers();
+          if (!current) return;
+          var placed = [];
+          var poles = current.poles;
+          var ordered = poles.filter(function (p) { return highlighted(p.number); })
+            .concat(poles.filter(function (p) { return !highlighted(p.number); }));
+          ordered.forEach(function (pole) {
+            var strong = highlighted(pole.number);
+            var point = map.latLngToLayerPoint([pole.lat, pole.lon]);
+            if (!strong) {
+              for (var i = 0; i < placed.length; i++) {
+                if (placed[i].distanceTo(point) < LABEL_MIN_PX) return;
+              }
+            }
+            placed.push(point);
+            label(pole, strong).addTo(labels);
+          });
+        }
+
+        function fit() {
+          var bp = current.breakPoint;
+          var points = current.poles.map(function (p) { return [p.lat, p.lon]; });
+          if (bp && current.view === 'break') map.setView([bp.lat, bp.lon], BREAK_ZOOM);
+          else if (points.length) map.fitBounds(L.latLngBounds(points), { padding: [24, 24] });
+        }
+
+        function render(message) {
+          current = message;
+          shapes.clearLayers();
+          var bp = message.breakPoint;
+          var points = message.poles.map(function (p) { return [p.lat, p.lon]; });
+          if (points.length >= 2) {
+            // Closed ring in pole-number order (the server sends poles ordered).
+            L.polygon(points, { color: BLUE, weight: 3, fillOpacity: 0.05, interactive: false }).addTo(shapes);
+          }
+          if (bp && bp.poles.length === 2) {
+            var ends = message.poles.filter(function (p) { return highlighted(p.number); });
+            if (ends.length === 2) {
+              L.polyline(ends.map(function (p) { return [p.lat, p.lon]; }), { color: RED, weight: 6, interactive: false }).addTo(shapes);
+            }
+          }
+          message.poles.forEach(function (pole) {
+            var hot = highlighted(pole.number);
+            L.circleMarker([pole.lat, pole.lon], {
+              radius: hot ? 8 : 4,
+              color: hot ? RED : BLUE,
+              weight: 2,
+              fillColor: hot ? RED : '#ffffff',
+              fillOpacity: 1,
+              interactive: false,
+            }).addTo(shapes);
+          });
+          if (bp) {
+            L.marker([bp.lat, bp.lon], {
+              interactive: false,
+              keyboard: false,
+              zIndexOffset: 1000,
+              icon: L.divIcon({
+                className: 'break-x',
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
+                html:
+                  '<svg width="34" height="34" viewBox="0 0 34 34">' +
+                  '<path d="M6 6 L28 28 M28 6 L6 28" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>' +
+                  '<path d="M6 6 L28 28 M28 6 L6 28" stroke="' + RED + '" stroke-width="6" stroke-linecap="round"/>' +
+                  '</svg>',
+              }),
+            }).addTo(shapes);
+          }
+          fit();
+          relabel();
+        }
+
+        map.on('zoomend', relabel);
+
+        window.eruvReceive = function (message) {
+          if (typeof message === 'string') message = JSON.parse(message);
+          if (message && message.type === 'render') render(message);
+        };
+        function onMessage(event) {
+          try {
+            window.eruvReceive(event.data);
+          } catch (e) {}
+        }
+        window.addEventListener('message', onMessage);
+        document.addEventListener('message', onMessage);
+
+        post({ type: 'ready' });
+      })();
+    </script>
+  </body>
+</html>
