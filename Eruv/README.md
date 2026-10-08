@@ -14,17 +14,17 @@ The design, requirements and decisions are in [docs/plans/2026-09-30-1248-feat-e
 | [`contracts/`](contracts/) | The Pi ↔ server API contract and JSON Schemas both sides test against | — |
 | [`docs/reference/`](docs/reference/) | OTDR module manual and launch box datasheet | — |
 
-## Where to put the AWS address
+## Where to put the server address
 
-The server address is not known yet. The placeholder is `203.0.113.10`, a reserved documentation IP that routes nowhere. Replace it in exactly these places:
+The server's address is `https://eruv-monitor.duckdns.org`, a free DuckDNS name whose DNS record must point at the server's public IP. It is set in exactly these places:
 
 | Component | File | Key |
 |---|---|---|
 | Pi agent | `pi-agent/config/agent.example.yaml`, installed on the device as `/etc/eruv-agent/agent.yaml` | `server.base_url` |
 | App | `app/.env` (copy of `app/.env.example`) | `EXPO_PUBLIC_API_URL` |
-| Server | `server/.env` (copy of `server/.env.example`) and `server/Caddyfile` | `PUBLIC_BASE_URL`, site address |
+| Server | `server/.env` (copy of `server/.env.example`); `server/Caddyfile` reads it from there | `PUBLIC_BASE_URL` |
 
-Before the iOS release the server needs a domain name with HTTPS: iOS blocks plain HTTP, and device keys must not travel unencrypted.
+To move to another domain later, change these values and rebuild the app: the address is compiled into it. The server needs a domain name with HTTPS: iOS blocks plain HTTP, and device keys must not travel unencrypted.
 
 ## Setup and operations
 

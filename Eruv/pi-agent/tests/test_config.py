@@ -35,7 +35,7 @@ def test_missing_device_key_is_refused():
 
 def test_example_config_carries_the_documented_defaults():
     cfg = load_config(EXAMPLE)
-    assert cfg.server.base_url == "https://203.0.113.10"
+    assert cfg.server.base_url == "https://eruv-monitor.duckdns.org"
     assert cfg.server.device_key == "CHANGE_ME"
     assert cfg.server.allow_insecure_dev is False
     assert (cfg.otdr.host, cfg.otdr.port) == ("192.168.1.249", 5000)

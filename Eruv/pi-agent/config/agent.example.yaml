@@ -2,8 +2,8 @@
 # (owner root, mode 0600: it holds the device key).
 
 server:
-  # Replace with the AWS server's public HTTPS origin (placeholder documentation IP).
-  base_url: https://203.0.113.10
+  # The server's public HTTPS origin (same as PUBLIC_BASE_URL in server/.env).
+  base_url: https://eruv-monitor.duckdns.org
   # The device API key the admin received when creating this city's device.
   device_key: CHANGE_ME
   # Only for local development against a plain-http server. Never true on a Pi.

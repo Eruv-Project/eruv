@@ -25,34 +25,33 @@ Sections:
 15. [Backups and restore](#15-backups-and-restore)
 16. [Troubleshooting](#16-troubleshooting)
 
-Conventions: `$SERVER` is the server's public origin, for example `https://eruv.example.org`. `$TOKEN` is an admin access token (section 4). Server commands run on the EC2 instance from the `server/` folder of the repository checkout.
+Conventions: `$SERVER` is the server's public origin, `https://eruv-monitor.duckdns.org`. `$TOKEN` is an admin access token (section 4). Server commands run on the EC2 instance from the `server/` folder of the repository checkout.
 
 ---
 
 ## 1. Set the server address
 
-The repository ships with a placeholder documentation IP instead of the real server address. Replace it in exactly the places listed in the table in [README.md, "Where to put the AWS address"](../README.md#where-to-put-the-aws-address):
+The server's address is the free DuckDNS name `https://eruv-monitor.duckdns.org`. It is set in exactly the places listed in [README.md, "Where to put the server address"](../README.md#where-to-put-the-server-address):
 
 | Component | File | Key |
 |---|---|---|
 | Pi agent | `pi-agent/config/agent.example.yaml`, installed on the device as `/etc/eruv-agent/agent.yaml` | `server.base_url` |
 | App | `app/.env` (copy of `app/.env.example`) | `EXPO_PUBLIC_API_URL` |
-| Server | `server/.env` (copy of `server/.env.example`) and `server/Caddyfile` | `PUBLIC_BASE_URL`, site address |
+| Server | `server/.env` (copy of `server/.env.example`); `server/Caddyfile` reads it from there | `PUBLIC_BASE_URL` |
 
-All four values must name the same origin. Use a **domain name** for production (for example `eruv.example.org`, with a DNS `A` record pointing at the instance's Elastic IP):
+All three values must name the same origin. A domain name is required:
 
 - iOS release builds refuse plain HTTP and untrusted certificates.
 - The Pi agent refuses anything but HTTPS with a trusted certificate, and the device key must not travel unencrypted.
-- A public certificate authority normally does not issue a certificate for a bare IP address.
+- Caddy gets a public Let's Encrypt certificate for the name automatically. Ports 80 and 443 must reach the server from the internet.
 
-The production domain is an open "Resolve Before Release" item in the plan. Get it before the iOS release build.
+**Point the name at the server.** Sign in at duckdns.org (account `shabbateruv@gmail.com`), and set the `current ip` of `eruv-monitor` to the server's public IP (the instance's Elastic IP on AWS) with "update ip". Check with `nslookup eruv-monitor.duckdns.org`. The DuckDNS token on that page is a secret: never commit it or paste it into chats.
+
+DuckDNS is a free, volunteer-run service. Before a city goes live, consider a paid domain: change the three values above and rebuild the app.
 
 ### Development on a bare IP
 
-Until the domain exists, the server can run on the bare Elastic IP:
-
-- **Default (`tls internal`):** the shipped `Caddyfile` serves HTTPS with a certificate from Caddy's own local CA. The API works from a browser or `curl -k`, but phones, the Pi agent and external uptime monitors do not trust that CA.
-- **Plain HTTP (dev only):** change the Caddyfile site address to `http://<ip>` and delete the `tls internal` line; set `PUBLIC_BASE_URL=http://<ip>`. The Pi needs `server.allow_insecure_dev: true` in its config, and the app needs a development build with a dev-only plain-HTTP exception. Never use this for a city that is live.
+Plain HTTP (dev only): set `PUBLIC_BASE_URL=http://<ip>` (Caddy then serves plain HTTP on port 80). The Pi needs `server.allow_insecure_dev: true` in its config, and the app needs a development build with a dev-only plain-HTTP exception. Never use this for a city that is live.
 
 ---
 
@@ -78,12 +77,12 @@ Edit `server/.env`:
 
 | Key | Value |
 |---|---|
-| `PUBLIC_BASE_URL` | `https://<your domain>` |
+| `PUBLIC_BASE_URL` | `https://eruv-monitor.duckdns.org` (already set in the example) |
 | `POSTGRES_PASSWORD` | a new random URL-safe password: `python3 -c "import secrets; print(secrets.token_urlsafe(24))"` |
 | `DATABASE_URL` | `postgresql+psycopg://eruv:<the same password>@db:5432/eruv` |
 | `JWT_SECRET` | `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` |
 
-Edit `server/Caddyfile`: replace the placeholder site address with the domain, and delete the `tls internal` line (see the comment at the top of the file).
+`server/Caddyfile` needs no edit: it takes the site address from `PUBLIC_BASE_URL`.
 
 ### 2.3 Start
 
@@ -91,7 +90,7 @@ Edit `server/Caddyfile`: replace the placeholder site address with the domain, a
 docker compose up -d --build
 docker compose ps          # api should become "healthy" within about 30 s
 docker compose logs -f api # migrations run first, then uvicorn starts
-curl -i https://<your domain>/health
+curl -i https://eruv-monitor.duckdns.org/health
 ```
 
 `/health` answers `200 {"status":"ok",...}` while the server's watchdog loop runs, and `503` otherwise.
@@ -122,7 +121,7 @@ The server is one EC2 instance. If it or its watchdog stops, nobody gets break a
 
 1. Create a free account with an external uptime service, for example **UptimeRobot** or **Better Stack Uptime**. Install its mobile app on the admin's phone and enable push notifications (add SMS or a phone call if the plan offers them).
 2. Add an **HTTP(S)** monitor:
-   - URL: `https://<your domain>/health`
+   - URL: `https://eruv-monitor.duckdns.org/health`
    - Interval: 1 minute (5 minutes is the most you should accept).
    - Alert when: the status code is not 200. If the service offers a keyword check, also require the keyword `"ok"`.
    - Request timeout: 10 to 30 s.
@@ -130,7 +129,7 @@ The server is one EC2 instance. If it or its watchdog stops, nobody gets break a
 4. Enable the SSL-certificate-expiry alert if the service offers one.
 5. Prove it works: see go-live check G4 (section 13).
 
-An external monitor cannot reach a server that uses `tls internal` or plain HTTP on a bare IP unless the check ignores certificate errors. Set up the real monitor once the domain exists.
+Set up the monitor once `https://eruv-monitor.duckdns.org/health` answers from outside.
 
 ---
 
@@ -150,7 +149,7 @@ The admin can now log in to the app. Later admins register in the app and are ap
 To get an access token for the API calls below:
 
 ```sh
-SERVER=https://<your domain>
+SERVER=https://eruv-monitor.duckdns.org
 TOKEN=$(curl -s -X POST "$SERVER/api/auth/login" -H 'Content-Type: application/json' \
     -d '{"email":"admin@example.org","password":"<password>"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
 ```
@@ -208,7 +207,7 @@ sudo nano /etc/eruv-agent/agent.yaml
 
 | Key | Value |
 |---|---|
-| `server.base_url` | `https://<your domain>` (same as `PUBLIC_BASE_URL`) |
+| `server.base_url` | `https://eruv-monitor.duckdns.org` (same as `PUBLIC_BASE_URL`) |
 | `server.device_key` | the key from section 5 |
 | `server.allow_insecure_dev` | `false` (always, on a real city) |
 | `otdr.host`, `otdr.port` | the OTDR module's Ethernet address (default `192.168.1.249:5000`) |
@@ -359,7 +358,7 @@ The app is installable only by invitation (R21).
 - An **Apple Developer Program organization account**. It needs a **D-U-N-S number** for the organization, which can take weeks. Start this before anything else.
 - An **Apple Business Manager** account for the same organization (business.apple.com), also verified with the D-U-N-S number.
 - An Expo account and EAS set up for the app (`eas init`; the project ID goes in `app/.env` as `EAS_PROJECT_ID`).
-- `app/.env` with `EXPO_PUBLIC_API_URL=https://<your domain>` (section 1).
+- `app/.env` with `EXPO_PUBLIC_API_URL=https://eruv-monitor.duckdns.org` (section 1).
 
 ### Publish a new iOS version (Apple Business Manager custom app)
 

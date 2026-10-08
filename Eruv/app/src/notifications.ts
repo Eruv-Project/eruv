@@ -1,12 +1,13 @@
 // Push notifications: permission, Expo push token registration with the server,
 // the R22 warning flag, and reading the city from a tapped alert.
 import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
+import type { NotificationResponse } from 'expo-notifications';
 import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import { create } from 'zustand';
 
 import { api } from './api/client';
+import { Notifications } from './pushModule';
 
 export type PermissionState = 'granted' | 'denied' | 'undetermined';
 
@@ -37,7 +38,7 @@ let handlerConfigured = false;
 
 /** Show alerts that arrive while the app is open. Called once at startup. */
 export function configureNotifications(): void {
-  if (handlerConfigured) return;
+  if (handlerConfigured || !Notifications) return;
   handlerConfigured = true;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -58,6 +59,11 @@ function easProjectId(): string | undefined {
  * with the server. Runs after login and on every return to the foreground.
  */
 export async function syncPushRegistration({ requestPermission }: { requestPermission: boolean }): Promise<void> {
+  if (!Notifications) {
+    // No push in this runtime (Expo Go on Android): keep the warning up.
+    useNotificationStore.setState({ permission: 'undetermined', tokenRegistered: false });
+    return;
+  }
   if (Platform.OS === 'android') {
     // Android 13+ shows the permission prompt only once a channel exists.
     await Notifications.setNotificationChannelAsync('default', {
@@ -89,6 +95,7 @@ export async function syncPushRegistration({ requestPermission }: { requestPermi
 }
 
 async function fetchExpoPushToken(): Promise<string> {
+  if (!Notifications) throw new Error('push notifications are unavailable');
   const { data } = await Notifications.getExpoPushTokenAsync({ projectId: easProjectId() });
   return data;
 }
@@ -97,6 +104,7 @@ async function fetchExpoPushToken(): Promise<string> {
 async function currentPushToken(): Promise<string | null> {
   const known = useNotificationStore.getState().token;
   if (known) return known;
+  if (!Notifications) return null;
   try {
     const { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') return null;
@@ -133,7 +141,7 @@ export function useNotificationSync(signedIn: boolean): void {
 }
 
 /** The city an alert is about. The server sends `data.city_id` with every push (U6). */
-export function alertCityId(response: Notifications.NotificationResponse): number | null {
+export function alertCityId(response: NotificationResponse): number | null {
   const raw = (response.notification.request.content.data as Record<string, unknown> | undefined)?.city_id;
   const id = typeof raw === 'string' ? Number(raw) : raw;
   return typeof id === 'number' && Number.isInteger(id) ? id : null;

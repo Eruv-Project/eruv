@@ -67,6 +67,9 @@ services:
 
   caddy:
     image: caddy:2
+    environment:
+      # The Caddyfile's site address (HTTPS certificate for this name).
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in server/.env}
     ports:
       - "80:80"
       - "443:443"
