@@ -2,6 +2,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { he } from '../../i18n/he';
+import { headerOptions } from '../../navigation/theme';
 import type { AdminStackParams } from '../../navigation/types';
 import { AdminHomeScreen } from './AdminHomeScreen';
 import { CityAdminScreen } from './CityAdminScreen';
@@ -12,7 +13,7 @@ const Stack = createNativeStackNavigator<AdminStackParams>();
 
 export function AdminNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
+    <Stack.Navigator screenOptions={headerOptions}>
       <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ title: he.admin.title }} />
       <Stack.Screen name="AdminCity" component={CityAdminScreen} options={({ route }) => ({ title: route.params.cityName })} />
       <Stack.Screen

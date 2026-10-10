@@ -9,6 +9,7 @@ import type { Pole } from '../api/client';
 import { apiOrigin } from '../config';
 import { he } from '../i18n/he';
 import { MAP_HTML } from './mapHtml.generated';
+import { colors } from './ui';
 
 /** Identifies the app to the OpenStreetMap tile servers (tile usage policy). */
 export const MAP_USER_AGENT_APP = 'EruvMonitor/1.0';
@@ -74,6 +75,8 @@ export function EruvMap({ poles, breakPoint = null, testID = 'eruv-map' }: EruvM
           return false;
         }}
         style={styles.webView}
+        // The page's own background, so no white flash before the map paints.
+        containerStyle={styles.webView}
       />
       {breakPoint ? (
         <Pressable
@@ -90,21 +93,23 @@ export function EruvMap({ poles, breakPoint = null, testID = 'eruv-map' }: EruvM
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  webView: { flex: 1 },
+  container: { flex: 1, backgroundColor: colors.background },
+  webView: { flex: 1, backgroundColor: colors.background },
   toggle: {
     position: 'absolute',
     bottom: 24,
     alignSelf: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 22,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
-  toggleText: { color: '#1f5fa8', fontSize: 15, fontWeight: '600' },
+  toggleText: { color: colors.primary, fontSize: 15, fontWeight: '700' },
 });

@@ -36,7 +36,7 @@ The server's address is the free DuckDNS name `https://eruv-monitor.duckdns.org`
 | Component | File | Key |
 |---|---|---|
 | Pi agent | `pi-agent/config/agent.example.yaml`, installed on the device as `/etc/eruv-agent/agent.yaml` | `server.base_url` |
-| App | `app/.env` (copy of `app/.env.example`) | `EXPO_PUBLIC_API_URL` |
+| App | `app/eas.json` for builds (`build.base.env`); `app/.env` (copy of `app/.env.example`) for local development | `EXPO_PUBLIC_API_URL` |
 | Server | `server/.env` (copy of `server/.env.example`); `server/Caddyfile` reads it from there | `PUBLIC_BASE_URL` |
 
 All three values must name the same origin. A domain name is required:
@@ -357,8 +357,8 @@ The app is installable only by invitation (R21).
 
 - An **Apple Developer Program organization account**. It needs a **D-U-N-S number** for the organization, which can take weeks. Start this before anything else.
 - An **Apple Business Manager** account for the same organization (business.apple.com), also verified with the D-U-N-S number.
-- An Expo account and EAS set up for the app (`eas init`; the project ID goes in `app/.env` as `EAS_PROJECT_ID`).
-- `app/.env` with `EXPO_PUBLIC_API_URL=https://eruv-monitor.duckdns.org` (section 1).
+- An Expo account and EAS set up for the app (`eas init`; the project ID is set in `app/app.config.ts`).
+- The server address for builds is in `app/eas.json` (`build.base.env.EXPO_PUBLIC_API_URL`). EAS builds run on Expo's servers and never see `app/.env`, which is git-ignored and only used for local development. Keep it equal to the address in section 1.
 
 ### Publish a new iOS version (Apple Business Manager custom app)
 

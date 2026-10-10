@@ -21,7 +21,7 @@ The server's address is `https://eruv-monitor.duckdns.org`, a free DuckDNS name 
 | Component | File | Key |
 |---|---|---|
 | Pi agent | `pi-agent/config/agent.example.yaml`, installed on the device as `/etc/eruv-agent/agent.yaml` | `server.base_url` |
-| App | `app/.env` (copy of `app/.env.example`) | `EXPO_PUBLIC_API_URL` |
+| App | `app/eas.json` for builds (`build.base.env`); `app/.env` (copy of `app/.env.example`) for local development | `EXPO_PUBLIC_API_URL` |
 | Server | `server/.env` (copy of `server/.env.example`); `server/Caddyfile` reads it from there | `PUBLIC_BASE_URL` |
 
 To move to another domain later, change these values and rebuild the app: the address is compiled into it. The server needs a domain name with HTTPS: iOS blocks plain HTTP, and device keys must not travel unencrypted.

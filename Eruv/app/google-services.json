@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "289994931866",
+    "project_id": "eruv-shabbat-7fc37",
+    "storage_bucket": "eruv-shabbat-7fc37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289994931866:android:165c715e2b554992c82923",
+        "android_client_info": {
+          "package_name": "com.eruv.monitor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBovjKvPWlGLIjh4BHdM4JV6JcFf6j4vIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,5 @@
 // City status banner (R16) with the break navigation link and help (R17).
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -7,16 +8,11 @@ import { he } from '../i18n/he';
 import { openNavigation } from '../lib/navLinks';
 import { formatClock, formatRelative } from '../lib/time';
 import { isStale } from '../state/cityStatus';
-import { colors } from './ui';
+import { StatusRing } from './StatusRing';
+import { type BannerTone, bannerColors, toneColors } from './tones';
+import { colors, fonts, palette } from './ui';
 
-export type BannerTone = 'ok' | 'break' | 'warning' | 'neutral';
-
-export const bannerColors: Record<BannerTone, string> = {
-  ok: colors.success,
-  break: '#b3261e',
-  warning: '#e65100',
-  neutral: '#5f6368',
-};
+export { type BannerTone, bannerColors, toneColors };
 
 export interface BannerModel {
   tone: BannerTone;
@@ -115,39 +111,47 @@ export function StatusBanner({
 
   return (
     <View testID="status-banner" accessibilityRole="summary" style={[styles.banner, { backgroundColor: bannerColors[model.tone] }]}>
-      <View style={styles.titleRow}>
-        <Text testID="banner-title" style={styles.title}>
-          {model.title}
-        </Text>
-        {model.showBreakHelp ? (
-          <Pressable
-            testID="banner-info"
-            accessibilityRole="button"
-            accessibilityLabel={he.city.info}
-            hitSlop={8}
-            onPress={() => setHelpOpen((open) => !open)}
-            style={styles.infoButton}
-          >
-            <Text style={styles.infoText}>i</Text>
-          </Pressable>
-        ) : null}
+      <View style={styles.hero}>
+        <StatusRing tone={model.tone} />
+        <View style={styles.heroText}>
+          <View style={styles.titleRow}>
+            <Text testID="banner-title" style={[styles.title, { color: model.tone === 'neutral' ? colors.text : toneColors[model.tone] }]}>
+              {model.title}
+            </Text>
+            {model.showBreakHelp ? (
+              <Pressable
+                testID="banner-info"
+                accessibilityRole="button"
+                accessibilityLabel={he.city.info}
+                hitSlop={10}
+                onPress={() => setHelpOpen((open) => !open)}
+              >
+                <Ionicons name={helpOpen ? 'information-circle' : 'information-circle-outline'} size={26} color={colors.text} />
+              </Pressable>
+            ) : null}
+          </View>
+          <Text testID="banner-last-check" style={styles.meta}>
+            {model.lastCheck}
+          </Text>
+        </View>
       </View>
       {model.secondary ? (
-        <View testID="banner-secondary" style={[styles.secondary, { backgroundColor: bannerColors[model.secondary.tone] }]}>
+        <View
+          testID="banner-secondary"
+          style={[styles.secondary, { backgroundColor: bannerColors[model.secondary.tone], borderColor: toneColors[model.secondary.tone] }]}
+        >
           <Text style={styles.secondaryText}>{model.secondary.text}</Text>
         </View>
       ) : null}
       {helpOpen && model.showBreakHelp ? <Text style={styles.help}>{he.city.secondBreakHelp}</Text> : null}
-      <Text testID="banner-last-check" style={styles.meta}>
-        {model.lastCheck}
-      </Text>
       {navigate ? (
         <Pressable
           testID="banner-navigate"
           accessibilityRole="link"
           onPress={() => void openNavigation(navigate.lat, navigate.lon)}
-          style={styles.navButton}
+          style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
         >
+          <Ionicons name="navigate" size={20} color="#fff" />
           <Text style={styles.navText}>{navigate.approximate ? he.city.navigateWazeApprox : he.city.navigateWaze}</Text>
         </Pressable>
       ) : null}
@@ -156,23 +160,24 @@ export function StatusBanner({
 }
 
 const styles = StyleSheet.create({
-  banner: { paddingHorizontal: 16, paddingVertical: 12, gap: 6 },
+  banner: { paddingHorizontal: 18, paddingVertical: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: palette.rule },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  heroText: { flex: 1, gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { flex: 1, color: '#fff', fontSize: 20, fontWeight: '700', textAlign: 'left' },
-  infoButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#fff',
+  title: { flex: 1, fontFamily: fonts.display, fontSize: 26, lineHeight: 34, textAlign: 'left' },
+  secondary: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
+  secondaryText: { color: colors.text, fontSize: 15, fontWeight: '600', textAlign: 'left' },
+  help: { color: colors.text, fontSize: 14, lineHeight: 21, textAlign: 'left' },
+  meta: { color: colors.muted, fontSize: 14, textAlign: 'left' },
+  navButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    backgroundColor: palette.breakRed,
+    borderRadius: 10,
+    paddingVertical: 13,
   },
-  infoText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  secondary: { borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.6)' },
-  secondaryText: { color: '#fff', fontSize: 15, fontWeight: '600', textAlign: 'left' },
-  help: { color: '#fff', fontSize: 14, lineHeight: 20, textAlign: 'left' },
-  meta: { color: '#fff', fontSize: 13, opacity: 0.9, textAlign: 'left' },
-  navButton: { alignSelf: 'flex-start', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  navText: { color: bannerColors.break, fontSize: 15, fontWeight: '700' },
+  navText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  pressed: { opacity: 0.8 },
 });

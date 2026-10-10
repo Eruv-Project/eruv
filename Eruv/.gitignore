@@ -32,3 +32,6 @@ Thumbs.db
 
 # Server database backups
 server/backups/
+
+# Browser automation screenshots
+.playwright-mcp/

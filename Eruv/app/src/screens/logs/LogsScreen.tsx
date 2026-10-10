@@ -6,7 +6,8 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 
 import { api, type LogItem, type LogType } from '../../api/client';
 import { CitySwitcher } from '../../components/CitySwitcher';
-import { bannerColors, breakTitle } from '../../components/StatusBanner';
+import { breakTitle } from '../../components/StatusBanner';
+import { toneColors } from '../../components/tones';
 import { Button, Chip, colors, ErrorText, Field } from '../../components/ui';
 import { he } from '../../i18n/he';
 import { formatNumber } from '../../lib/format';
@@ -65,12 +66,12 @@ function describe(item: LogItem): { title: string; lines: string[]; color: strin
       }
       const color =
         item.to_state === 'BREAK'
-          ? bannerColors.break
+          ? toneColors.break
           : item.to_state === 'DISCONNECTED' || item.to_state === 'FAULT'
-            ? bannerColors.warning
+            ? toneColors.warning
             : item.to_state === 'OK' || item.to_state === 'ONLINE'
-              ? bannerColors.ok
-              : bannerColors.neutral;
+              ? toneColors.ok
+              : toneColors.neutral;
       return {
         title: he.logs.transition(he.logs.dimension[item.dimension], stateLabel(item.from_state), stateLabel(item.to_state)),
         lines,
@@ -83,13 +84,13 @@ function describe(item: LogItem): { title: string; lines: string[]; color: strin
       ];
       if (item.fiber_length_m !== null) parts.push(he.logs.fiberLength(formatNumber(item.fiber_length_m)));
       if (item.link_loss_db !== null) parts.push(he.logs.linkLoss(formatNumber(item.link_loss_db)));
-      return { title: he.logs.result(item.seq), lines: [parts.join(' · ')], color: bannerColors.neutral };
+      return { title: he.logs.result(item.seq), lines: [parts.join(' · ')], color: toneColors.neutral };
     }
     case 'fault': {
       const detail = [item.fault_detail, item.fault_status_code !== null ? he.logs.faultCode(item.fault_status_code) : null]
         .filter(Boolean)
         .join(' · ');
-      return { title: he.logs.fault(item.fault_kind), lines: detail ? [detail] : [], color: bannerColors.warning };
+      return { title: he.logs.fault(item.fault_kind), lines: detail ? [detail] : [], color: toneColors.warning };
     }
   }
 }

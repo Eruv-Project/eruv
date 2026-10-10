@@ -1,5 +1,6 @@
 // City tab (R15–R17): status banner over the OpenStreetMap ring, live over WebSocket.
 // The shell pieces (notification warning strip, admin city switcher) stay on top.
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -8,7 +9,7 @@ import { CitySwitcher } from '../../components/CitySwitcher';
 import { EruvMap, type MapBreakPoint } from '../../components/EruvMap';
 import { NotificationWarningStrip } from '../../components/NotificationWarningStrip';
 import { StatusBanner } from '../../components/StatusBanner';
-import { colors } from '../../components/ui';
+import { colors, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
 import { useAuthStore } from '../../state/auth';
 import { useCityStatus } from '../../state/cityStatus';
@@ -42,8 +43,15 @@ export function CityScreen() {
           <Text testID="city-name" style={styles.name}>
             {status.name}
           </Text>
-          <Pressable testID="city-refresh" accessibilityRole="button" hitSlop={8} onPress={() => void refresh()}>
-            <Text style={styles.link}>{he.city.refresh}</Text>
+          <Pressable
+            testID="city-refresh"
+            accessibilityRole="button"
+            accessibilityLabel={he.city.refresh}
+            hitSlop={10}
+            onPress={() => void refresh()}
+            style={({ pressed }) => [styles.refresh, pressed && { opacity: 0.6 }]}
+          >
+            <Ionicons name="refresh" size={22} color={colors.primary} />
           </Pressable>
         </View>
         <StatusBanner status={status} now={now} serverUnreachable={view.serverUnreachable} />
@@ -79,19 +87,28 @@ export function CityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 6,
   },
-  name: { fontSize: 20, fontWeight: '700', color: colors.text },
-  link: { color: colors.primary, fontSize: 15 },
+  name: { flex: 1, fontFamily: fonts.display, fontSize: 24, lineHeight: 32, color: colors.gold, textAlign: 'left' },
+  refresh: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  link: { color: colors.primary, fontSize: 15, fontWeight: '600' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   centerText: { flex: 1, textAlign: 'center', textAlignVertical: 'center', fontSize: 18, color: colors.text, padding: 24 },
   error: { color: colors.danger, fontSize: 16 },
   skeleton: { flex: 1, padding: 16, gap: 12 },
-  bone: { backgroundColor: '#e4e7eb', borderRadius: 8 },
+  bone: { backgroundColor: colors.surface, borderRadius: 10 },
 });

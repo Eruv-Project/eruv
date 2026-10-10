@@ -1,21 +1,53 @@
-// Small shared building blocks for the auth and settings screens.
+// Design tokens and small shared building blocks.
+//
+// The palette comes from the app icon: a night-navy ground, the glowing cyan of
+// the fiber, gold for the eruv's poles and names. Red and orange appear only for
+// a break and for monitoring problems, so they always mean something.
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, type TextInputProps } from 'react-native';
 
+export const palette = {
+  night: '#0C182A',
+  deck: '#13243C',
+  raised: '#1A2E4A',
+  rule: '#2A4064',
+  fiber: '#3FD8FF',
+  gold: '#E6B850',
+  ink: '#EDF3FA',
+  mist: '#93A6BF',
+  breakRed: '#FF5D5D',
+  warn: '#FF9F43',
+};
+
 export const colors = {
-  primary: '#1f5fa8',
-  text: '#1b1b1b',
-  muted: '#5f6368',
-  danger: '#b3261e',
-  warningBg: '#fdecea',
-  border: '#c9ced6',
-  selected: '#e3eefb',
-  success: '#1e7d32',
+  primary: palette.fiber,
+  /** Text on a fiber-coloured fill. */
+  onPrimary: palette.night,
+  text: palette.ink,
+  muted: palette.mist,
+  danger: palette.breakRed,
+  warningBg: '#3B1E26',
+  border: palette.rule,
+  selected: '#16385A',
+  success: '#2FD3A0',
+  background: palette.night,
+  surface: palette.deck,
+  gold: palette.gold,
+};
+
+/** Frank Ruhl Libre: a traditional Hebrew serif for headlines (loaded in App.tsx). */
+export const fonts = {
+  display: 'FrankRuhlLibre_700Bold',
+  displayBlack: 'FrankRuhlLibre_900Black',
 };
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
-    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.screen}
+      keyboardShouldPersistTaps="handled"
+    >
       {children}
     </ScrollView>
   );
@@ -58,7 +90,14 @@ export function Chip({
 }
 
 export function Field(props: TextInputProps) {
-  return <TextInput placeholderTextColor={colors.muted} {...props} style={[styles.input, props.style]} />;
+  return (
+    <TextInput
+      placeholderTextColor={colors.muted}
+      selectionColor={colors.primary}
+      {...props}
+      style={[styles.input, props.style]}
+    />
+  );
 }
 
 export function Button({
@@ -81,10 +120,10 @@ export function Button({
       accessibilityRole="button"
       disabled={busy}
       onPress={onPress}
-      style={primary ? styles.button : styles.link}
+      style={({ pressed }) => [primary ? styles.button : styles.link, pressed && styles.pressed]}
     >
       {busy ? (
-        <ActivityIndicator color="#fff" />
+        <ActivityIndicator color={primary ? colors.onPrimary : colors.primary} />
       ) : (
         <Text style={primary ? styles.buttonText : styles.linkText}>{title}</Text>
       )}
@@ -93,28 +132,38 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  screen: { padding: 24, gap: 12, flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text, textAlign: 'left' },
+  scroll: { backgroundColor: colors.background },
+  screen: { padding: 24, gap: 14, flexGrow: 1 },
+  title: { fontFamily: fonts.display, fontSize: 28, lineHeight: 36, color: colors.text, textAlign: 'left' },
   body: { fontSize: 16, color: colors.text, lineHeight: 24, textAlign: 'left' },
-  error: { fontSize: 14, color: colors.danger, textAlign: 'left' },
+  error: { fontSize: 14, lineHeight: 20, color: colors.danger, textAlign: 'left' },
   input: {
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
     textAlign: 'right',
     color: colors.text,
   },
-  button: { backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  link: { paddingVertical: 8, alignItems: 'center' },
-  linkText: { color: colors.primary, fontSize: 15 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, borderColor: colors.border },
+  button: { backgroundColor: colors.primary, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
+  buttonText: { color: colors.onPrimary, fontSize: 16, fontWeight: '700' },
+  link: { paddingVertical: 10, alignItems: 'center' },
+  linkText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  pressed: { opacity: 0.75 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { color: colors.text },
-  chipTextActive: { color: '#fff' },
+  chipTextActive: { color: colors.onPrimary, fontWeight: '700' },
 });
 
 /** Shared small error-text style (also used by the admin screens). */

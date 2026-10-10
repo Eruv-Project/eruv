@@ -103,7 +103,7 @@ describe('StatusBanner (R16)', () => {
     await show(breakStatus(mapping));
     expect(bannerBg()).toHaveStyle({ backgroundColor: bannerColors.break });
     expect(screen.getByTestId('banner-title')).toHaveTextContent(title);
-    expect(screen.getByTestId('banner-navigate')).toHaveTextContent(nav);
+    expect(screen.getByTestId('banner-navigate')).toHaveTextContent(nav, { exact: false }); // the button also holds an icon glyph
   });
 
   it('an unknown mapping reads as a generic break without a navigation link', async () => {
