@@ -338,6 +338,21 @@ def test_wrong_sync_string_raises_framing_error() -> None:
         p.FrameReader().feed(bad)
 
 
+def test_short_sync_of_firmware_4_1_is_accepted() -> None:
+    # Captured from a real module (firmware 4.1, 2026-04-15): the version reply
+    # starts with "Otdr-3800M" NUL-padded instead of the manual's sync.
+    raw = bytes.fromhex(
+        "4f7464722d333830304d000000000000" "54000000000001000100000000000000"
+        "00000000010000000000000000000091" "1c0000000104ea0704000f0024090b00"
+        "4f7464722d333830304d000000000000" "eeeeffff"
+    )
+    (frame,) = p.FrameReader().feed(raw)
+    version = p.decode(frame)
+    assert isinstance(version, p.VersionInfo)
+    assert (version.major, version.minor, version.year, version.month, version.day) == (4, 1, 2026, 4, 15)
+    assert version.device == "Otdr-3800M"
+
+
 def test_datalen_disagreeing_with_total_length_raises_framing_error() -> None:
     raw = bytearray(fx.status_frame(0))
     raw[48:52] = u32(8)  # datalen says 8, TotalLength says 4

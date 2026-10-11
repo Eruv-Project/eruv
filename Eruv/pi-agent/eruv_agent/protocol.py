@@ -23,6 +23,10 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 
 SYNC = b"GLinkOtdr-3800M\x00"
+# Syncs accepted on frames from the module. Firmware 4.1 (2026-04-15) answers
+# with "Otdr-3800M" NUL-padded to 16 bytes instead of the manual's sync; it
+# accepts host frames with either, so the host keeps sending SYNC.
+MODULE_SYNCS = frozenset({SYNC, b"Otdr-3800M".ljust(16, b"\x00")})
 HEADER_SIZE = 44  # sync + 7 x uint32
 FRAME_OVERHEAD = HEADER_SIZE + 12  # + cmd, datalen, RSVD2 = 16 + 10*4
 RSVD_VALUE = 0xFFFFEEEE
@@ -127,7 +131,7 @@ class Frame:
 def _parse_header(header: bytes) -> tuple[int, int]:
     """Validate a 44-byte header; return (TotalLength, PacketID)."""
     sync, total, _rev, _ftype, _src, _dst, packet_id, _rsvd = _HEADER.unpack(header)
-    if sync != SYNC:
+    if sync not in MODULE_SYNCS:
         raise FramingError(f"bad frame sync {sync!r}")
     if total < FRAME_OVERHEAD:
         raise FramingError(f"TotalLength {total} below minimum {FRAME_OVERHEAD}")
