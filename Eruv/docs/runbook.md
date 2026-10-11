@@ -212,7 +212,27 @@ sudo nano /etc/eruv-agent/agent.yaml
 | `server.allow_insecure_dev` | `false` (always, on a real city) |
 | `otdr.host`, `otdr.port` | the OTDR module's Ethernet address (default `192.168.1.249:5000`) |
 
-Leave the `test` and `schedule` values as shipped unless the plan says otherwise (one test every 60 s, heartbeat every 10 s).
+Leave the `schedule` values as shipped (one test every 60 s, heartbeat every 10 s). Set the `test` range and pulse width for the fiber actually connected; the shipped values suit a ring tens of kilometres long:
+
+| Fiber after the OTDR (launch box included) | `range_m` | `pulse_width_ns` |
+|---|---|---|
+| Up to about 2 km (bench test with a short spool) | `5000` | `50` |
+| A city ring | at least 1.5 × the fiber length | longer for longer rings; check that the result's end event matches the known length |
+
+With a pulse too long for the fiber, the OTDR reports no end event (`end event None` in the log, fiber length 0) and the reference cannot be set. The module works at 1550 nm only; at 1310 nm it sees no fiber.
+
+On the bench (2026-10-11) a 1.05 km spool (launch box + 50 m) read 1050.1–1050.3 m test to test with `range_m: 5000`, `pulse_width_ns: 50`, and every go-live scenario (break, repair, Pi power loss, OTDR cable pulled) behaved as specified.
+
+Network on the Pi: Wi-Fi (or the SIM modem) carries the internet; `eth0` goes to the OTDR with a static address and no default route, so internet traffic never tries the OTDR link:
+
+```sh
+sudo nmcli con mod "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.1.10/24 \
+    ipv4.gateway "" ipv4.never-default yes ipv6.method ignore
+sudo nmcli con up "Wired connection 1"
+ping -c 3 192.168.1.249    # the OTDR answers
+```
+
+OTDR firmware 4.1 (2026-04-15) starts its frames with `Otdr-3800M` instead of the manual's `GLinkOtdr-3800M`; the agent accepts both.
 
 Start it and watch the log:
 
