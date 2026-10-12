@@ -62,6 +62,15 @@ const config: ExpoConfig = {
     'expo-system-ui',
     'expo-font',
     'expo-notifications',
+    // Foreground location only: the maintainer's own dot on the City map.
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'המיקום שלך מוצג על מפת העירוב, כדי שתראה איפה אתה ביחס לקרע.',
+        isAndroidBackgroundLocationEnabled: false,
+        isIosBackgroundLocationEnabled: false,
+      },
+    ],
     // Hebrew UI: native right-to-left layout from the first launch (R18).
     ['expo-localization', { supportsRTL: true, forcesRTL: true }],
   ],

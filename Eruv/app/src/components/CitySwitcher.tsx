@@ -1,6 +1,6 @@
 // Admin-only city switcher at the top of the City and Logs tabs. Renders nothing for maintainers.
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { isAdmin, useAuthStore } from '../state/auth';
 import { useCities } from './useCities';
@@ -23,7 +23,9 @@ function AdminCitySwitcher() {
   }, [activeCityId, cities, setActiveCity]);
 
   return (
-    <ScrollView horizontal testID="city-switcher" contentContainerStyle={styles.row} style={styles.bar}>
+    // A wrapping row, not a horizontal ScrollView: in RTL, Android opens a horizontal
+    // ScrollView scrolled past its content, so the chips were off screen.
+    <View testID="city-switcher" style={styles.bar}>
       {(cities ?? []).map((city) => {
         const active = city.id === activeCityId;
         return (
@@ -36,11 +38,17 @@ function AdminCitySwitcher() {
           />
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: { flexGrow: 0, borderBottomWidth: 1, borderBottomColor: colors.border },
-  row: { padding: 8, gap: 8 },
+  bar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
 });

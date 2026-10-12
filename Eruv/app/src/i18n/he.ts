@@ -88,6 +88,7 @@ export const he = {
     secondBreakHelp: 'ה-OTDR לא יכול לראות קרע נוסף אחרי הקרע הראשון עד שהוא יתוקן',
     showRing: 'הצג את כל הטבעת',
     showBreak: 'חזרה למיקום הקרע',
+    myLocation: 'המיקום שלי',
     unavailable: 'אין גישה לעיר זו',
   },
   relative: {

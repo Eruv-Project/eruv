@@ -1,7 +1,8 @@
 // City tab (R15–R17): status banner over the OpenStreetMap ring, live over WebSocket.
 // The shell pieces (notification warning strip, admin city switcher) stay on top.
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import { NavigationContext } from '@react-navigation/native';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { CityStatus, Pole } from '../../api/client';
@@ -11,6 +12,7 @@ import { NotificationWarningStrip } from '../../components/NotificationWarningSt
 import { StatusBanner } from '../../components/StatusBanner';
 import { colors, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
+import { useMyLocation } from '../../lib/useMyLocation';
 import { useAuthStore } from '../../state/auth';
 import { useCityStatus } from '../../state/cityStatus';
 
@@ -25,11 +27,29 @@ export function mapBreakPoint(status: CityStatus | null): MapBreakPoint | null {
   return { lat: mapping.lat, lon: mapping.lon, poles };
 }
 
+/** True while this screen is the visible tab; true outside a navigator (tests). */
+function useTabFocused(): boolean {
+  const navigation = useContext(NavigationContext);
+  const [focused, setFocused] = useState(() => navigation?.isFocused() ?? true);
+  useEffect(() => {
+    if (!navigation) return;
+    const offFocus = navigation.addListener('focus', () => setFocused(true));
+    const offBlur = navigation.addListener('blur', () => setFocused(false));
+    return () => {
+      offFocus();
+      offBlur();
+    };
+  }, [navigation]);
+  return focused;
+}
+
 export function CityScreen() {
   const cityId = useAuthStore((s) => s.activeCityId);
   const { view, now, refresh } = useCityStatus(cityId);
   const status = view.live.status;
   const breakPoint = useMemo(() => mapBreakPoint(status), [status]);
+  // The phone's position on the map, only while this tab is on screen.
+  const { location: me } = useMyLocation(useTabFocused());
 
   let body;
   if (cityId === null) {
@@ -55,7 +75,7 @@ export function CityScreen() {
           </Pressable>
         </View>
         <StatusBanner status={status} now={now} serverUnreachable={view.serverUnreachable} />
-        <EruvMap poles={view.poles ?? NO_POLES} breakPoint={breakPoint} />
+        <EruvMap poles={view.poles ?? NO_POLES} breakPoint={breakPoint} me={me} />
       </>
     );
   } else if (view.loading) {

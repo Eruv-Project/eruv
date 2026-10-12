@@ -13,6 +13,8 @@
   window/document "message" event). Message:
     { "type": "render", "poles": [{number, lat, lon}], "view": "break" | "ring",
       "breakPoint": null | { "lat", "lon", "poles": [bounding pole numbers] } }
+  Also { "type": "me", "me": null | { "lat", "lon", "accuracy" } } (the phone's
+  position, a blue dot) and { "type": "center-me" } (centre the map on it).
   The page posts {"type": "ready"} to the app when it can receive.
 -->
 <html>
@@ -62,6 +64,10 @@
       .break-mark .core {
         position: absolute; left: 13px; top: 13px; width: 18px; height: 18px; border-radius: 50%;
         background: #FF5D5D; border: 3px solid #fff; box-sizing: border-box;
+      }
+      .me-dot {
+        width: 18px; height: 18px; border-radius: 50%; box-sizing: border-box;
+        background: #4C8DFF; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(76, 141, 255, 0.35);
       }
       @keyframes pulse { from { transform: scale(0.45); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
       @media (prefers-reduced-motion: reduce) { .break-mark .pulse { animation: none; opacity: 0.6; } }
@@ -186,11 +192,33 @@
           relabel();
         }
 
+        // The phone's own position: a blue dot over the ring, with its accuracy circle.
+        var meLayer = L.layerGroup().addTo(map);
+        var me = null;
+        function showMe(position) {
+          me = position;
+          meLayer.clearLayers();
+          if (!me) return;
+          if (me.accuracy) {
+            L.circle([me.lat, me.lon], {
+              radius: me.accuracy, color: '#4C8DFF', weight: 1, opacity: 0.6,
+              fillColor: '#4C8DFF', fillOpacity: 0.12, interactive: false,
+            }).addTo(meLayer);
+          }
+          L.marker([me.lat, me.lon], {
+            interactive: false, keyboard: false, zIndexOffset: 2000,
+            icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+          }).addTo(meLayer);
+        }
+
         map.on('zoomend', relabel);
 
         window.eruvReceive = function (message) {
           if (typeof message === 'string') message = JSON.parse(message);
-          if (message && message.type === 'render') render(message);
+          if (!message) return;
+          if (message.type === 'render') render(message);
+          else if (message.type === 'me') showMe(message.me);
+          else if (message.type === 'center-me' && me) map.setView([me.lat, me.lon], Math.max(map.getZoom(), 17));
         };
         function onMessage(event) {
           try {

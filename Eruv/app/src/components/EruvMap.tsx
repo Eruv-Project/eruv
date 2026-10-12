@@ -2,12 +2,14 @@
 // message bridge. Reusable for any pole list (e.g. an admin pole-import preview):
 // pass `breakPoint={null}` to just draw the ring.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import type { Pole } from '../api/client';
 import { apiOrigin } from '../config';
 import { he } from '../i18n/he';
+import type { MyLocation } from '../lib/useMyLocation';
 import { MAP_HTML } from './mapHtml.generated';
 import { colors } from './ui';
 
@@ -26,6 +28,8 @@ export type MapView = 'break' | 'ring';
 export interface EruvMapProps {
   poles: Pole[];
   breakPoint?: MapBreakPoint | null;
+  /** The phone's own position, drawn as a blue dot (City tab only). */
+  me?: MyLocation | null;
   testID?: string;
 }
 
@@ -34,7 +38,12 @@ export function mapMessage(poles: Pole[], breakPoint: MapBreakPoint | null, view
   return JSON.stringify({ type: 'render', poles, breakPoint, view: breakPoint ? view : 'ring' });
 }
 
-export function EruvMap({ poles, breakPoint = null, testID = 'eruv-map' }: EruvMapProps) {
+/** The bridge message with the phone's position (a separate message, so `render` stays unchanged). */
+export function meMessage(me: MyLocation | null): string {
+  return JSON.stringify({ type: 'me', me });
+}
+
+export function EruvMap({ poles, breakPoint = null, me = null, testID = 'eruv-map' }: EruvMapProps) {
   const webView = useRef<WebView>(null);
   // Bumped on every "ready" from the page, so a reloaded page gets the data again.
   const [readyCount, setReadyCount] = useState(0);
@@ -50,6 +59,16 @@ export function EruvMap({ poles, breakPoint = null, testID = 'eruv-map' }: EruvM
     if (readyCount === 0) return;
     webView.current?.injectJavaScript(`window.eruvReceive(${JSON.stringify(message)}); true;`);
   }, [message, readyCount]);
+
+  const send = useCallback((json: string) => {
+    webView.current?.injectJavaScript(`window.eruvReceive(${JSON.stringify(json)}); true;`);
+  }, []);
+
+  const meJson = useMemo(() => meMessage(me), [me]);
+  useEffect(() => {
+    if (readyCount === 0 || !me) return;
+    send(meJson);
+  }, [meJson, me, readyCount, send]);
 
   const onMessage = useCallback((event: WebViewMessageEvent) => {
     try {
@@ -78,6 +97,17 @@ export function EruvMap({ poles, breakPoint = null, testID = 'eruv-map' }: EruvM
         // The page's own background, so no white flash before the map paints.
         containerStyle={styles.webView}
       />
+      {me ? (
+        <Pressable
+          testID="map-center-me"
+          accessibilityRole="button"
+          accessibilityLabel={he.city.myLocation}
+          onPress={() => send(JSON.stringify({ type: 'center-me' }))}
+          style={({ pressed }) => [styles.meButton, pressed && { opacity: 0.7 }]}
+        >
+          <Ionicons name="locate" size={24} color={colors.primary} />
+        </Pressable>
+      ) : null}
       {breakPoint ? (
         <Pressable
           testID="map-toggle-view"
@@ -112,4 +142,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   toggleText: { color: colors.primary, fontSize: 15, fontWeight: '700' },
+  meButton: {
+    position: 'absolute',
+    top: 12,
+    end: 12,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
 });
