@@ -393,6 +393,19 @@ Production iOS distribution is an Apple Business Manager **custom app**. Its bui
 7. After approval, the first time only: in Apple Business Manager → **Apps and Books**, find the custom app, get licenses, and hand out redeem codes (or assign it through an MDM, if the organization has one).
 8. Later versions reach installed phones as normal App Store updates. Ask maintainers to keep automatic updates on.
 
+### Updating installed apps (over the air)
+
+Most changes (screens, texts, design, the map, bug fixes) reach every installed app without a new APK, through EAS Update. A phone downloads the update in the background when the app opens and shows it from the next launch.
+
+```sh
+cd app
+npx eas-cli update --channel preview --environment preview --message "what changed"
+```
+
+Use `--channel production --environment production` for store builds. The server address comes from the EAS environment variable `EXPO_PUBLIC_API_URL` (set for the development, preview and production environments), never from the local `app/.env`.
+
+A change to native code (a new native module or permission, the icon, the app name) changes the runtime fingerprint. Phones on an older build do not receive such an update; build and install a new APK (`npx eas-cli build --platform android --profile preview`) and they get updates again from then on.
+
 ### Android
 
 Either of:

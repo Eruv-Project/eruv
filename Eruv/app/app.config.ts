@@ -25,6 +25,17 @@ const config: ExpoConfig = {
   owner: 'eruvshabbats-team',
   scheme: 'eruv',
   version: '1.0.0',
+  // Over-the-air updates (EAS Update): screens, texts, design and fixes reach
+  // installed phones without a new APK. The fingerprint runtime version changes
+  // whenever native code changes (a new module, permission, icon), so an update
+  // is only offered to builds that can run it; those changes still need a build.
+  runtimeVersion: { policy: 'fingerprint' },
+  updates: {
+    url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
+    // Check on every launch; a downloaded update applies on the next launch.
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 0,
+  },
   orientation: 'portrait',
   icon: './assets/icon.png',
   // The app is drawn on the icon's night navy; system dialogs follow it.
