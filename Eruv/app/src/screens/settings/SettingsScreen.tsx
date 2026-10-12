@@ -54,8 +54,8 @@ export function SettingsScreen() {
       {admin ? null : (
         <Button variant="link" title={he.settings.requestCity} onPress={() => navigation.navigate('CityChange')} />
       )}
-      <Button title={he.settings.logout} onPress={() => void logout()} />
       <Row label={he.settings.version} value={versionText()} />
+      <Button title={he.settings.logout} onPress={() => void logout()} />
     </Screen>
   );
 }
