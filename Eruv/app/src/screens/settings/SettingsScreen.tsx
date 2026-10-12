@@ -1,5 +1,8 @@
-// Settings: notification status, the approved city with "request another city" (R22), logout.
+// Settings: notification status, the approved city with "request another city" (R22), logout,
+// and which build / over-the-air update is running (to confirm an EAS Update arrived).
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button, colors, Screen, Title } from '../../components/ui';
@@ -16,6 +19,14 @@ function Row({ label, value }: { label: string; value: string }) {
       <Text style={styles.value}>{value}</Text>
     </View>
   );
+}
+
+function versionText(): string {
+  const version = Constants.expoConfig?.version ?? '—';
+  if (Updates.isEmbeddedLaunch || !Updates.createdAt) return `${version} (${he.settings.versionEmbedded})`;
+  const d = Updates.createdAt;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${version} (${he.settings.versionUpdate} ${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())})`;
 }
 
 export function SettingsScreen() {
@@ -44,6 +55,7 @@ export function SettingsScreen() {
         <Button variant="link" title={he.settings.requestCity} onPress={() => navigation.navigate('CityChange')} />
       )}
       <Button title={he.settings.logout} onPress={() => void logout()} />
+      <Row label={he.settings.version} value={versionText()} />
     </Screen>
   );
 }

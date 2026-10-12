@@ -246,6 +246,9 @@ export const he = {
     requestCity: 'בקשת מעבר לעיר אחרת',
     logout: 'התנתקות',
     adminAllCities: 'מנהל — גישה לכל הערים',
+    version: 'גרסה',
+    versionEmbedded: 'מקורית',
+    versionUpdate: 'עדכון',
   },
   notifications: {
     warning: 'התראות כבויות — לא תקבל הודעה על קטיעה בעירוב',
