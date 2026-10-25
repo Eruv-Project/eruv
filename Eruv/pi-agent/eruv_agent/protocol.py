@@ -83,6 +83,7 @@ class StopMode(IntEnum):
 
 
 EVENT_TYPES = {0: "start", 1: "reflective", 2: "non_reflective", 3: "end"}
+START_EVENT_CODE = 0
 END_EVENT_CODE = 3
 
 
@@ -309,8 +310,24 @@ class FullResult:
 
     @property
     def end_event_distance_m(self) -> float | None:
+        """The last end event; 0.0 when nothing is on the port; None if the OTDR found no end.
+
+        With nothing connected (or no light past the OTDR connector) the OTDR
+        reports only the start event, without a reflection value. Every such
+        trace in the field data (1,417 of them) was exactly that, and every trace
+        with a fiber on the port had a start reflection, so this reads as a
+        break at 0 m (at the cabinet) rather than an unusable reading.
+        """
         ends = [e for e in self.events if e.type_code == END_EVENT_CODE]
-        return ends[-1].distance_m if ends else None
+        if ends:
+            return ends[-1].distance_m
+        if (
+            len(self.events) == 1
+            and self.events[0].type_code == START_EVENT_CODE
+            and self.events[0].reflect_loss_db is None
+        ):
+            return 0.0
+        return None
 
     def curve_db(self) -> list[float]:
         return curve_db(self.curve_raw)

@@ -227,8 +227,14 @@ def test_unknown_event_type_code_maps_to_unknown() -> None:
 
 
 def test_no_end_event_gives_null_end_distance() -> None:
-    fixture = fx.FullResult(events=[fx.Event(index=0, type_code=0)])
+    fixture = fx.FullResult(events=[fx.Event(index=0, type_code=0, reflect_loss=-45.5)])
     assert decode_one(fixture.frame()).end_event_distance_m is None
+
+
+def test_nothing_on_the_port_is_an_end_at_0_m() -> None:
+    # Only the start event, with no reflection value (8192): no fiber past the connector.
+    fixture = fx.FullResult(events=[fx.Event(index=0, type_code=0)])
+    assert decode_one(fixture.frame()).end_event_distance_m == 0.0
 
 
 def test_curve_values_convert_to_db() -> None:

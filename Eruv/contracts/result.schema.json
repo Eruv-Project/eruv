@@ -62,7 +62,7 @@
     "link_attenuation_db_per_km": { "type": ["number", "null"] },
     "end_event_distance_m": {
       "type": ["number", "null"],
-      "description": "Distance of the last end event (type 3), null if the OTDR reported none."
+      "description": "Distance of the last end event (type 3); 0 when the OTDR reported only a start event without a reflection (nothing on the port); null if it found no end otherwise."
     },
     "events": {
       "type": "array",
