@@ -87,7 +87,7 @@ export function PoleImportScreen() {
         {fileName ? <Text style={adminStyles.note}>{he.admin.poles.file(fileName)}</Text> : null}
         {preview ? (
           <Text testID="pole-preview-summary" style={adminStyles.cardTitle}>
-            {he.admin.poles.previewSummary(preview.count, formatNumber(preview.perimeter_m))}
+            {he.admin.poles.previewSummary(preview.count, formatNumber(preview.perimeter_m), preview.ring_closed !== false)}
           </Text>
         ) : null}
         <ErrorText>{failure}</ErrorText>
@@ -104,7 +104,12 @@ export function PoleImportScreen() {
       {preview ? (
         <>
           <View style={styles.map}>
-            <EruvMap poles={preview.poles} breakPoint={null} testID="pole-preview-map" />
+            <EruvMap
+              poles={preview.poles}
+              breakPoint={null}
+              closed={preview.ring_closed !== false}
+              testID="pole-preview-map"
+            />
           </View>
           <View style={styles.bottom}>
             <Button testID="save-poles" title={he.admin.poles.save} busy={saving} onPress={save} />

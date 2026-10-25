@@ -75,7 +75,7 @@ export function CityScreen() {
           </Pressable>
         </View>
         <StatusBanner status={status} now={now} serverUnreachable={view.serverUnreachable} />
-        <EruvMap poles={view.poles ?? NO_POLES} breakPoint={breakPoint} me={me} />
+        <EruvMap poles={view.poles ?? NO_POLES} breakPoint={breakPoint} closed={status.ring_closed !== false} me={me} />
       </>
     );
   } else if (view.loading) {

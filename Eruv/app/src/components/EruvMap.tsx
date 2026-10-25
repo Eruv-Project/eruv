@@ -28,14 +28,16 @@ export type MapView = 'break' | 'ring';
 export interface EruvMapProps {
   poles: Pole[];
   breakPoint?: MapBreakPoint | null;
+  /** False draws an open line that ends at the last pole. */
+  closed?: boolean;
   /** The phone's own position, drawn as a blue dot (City tab only). */
   me?: MyLocation | null;
   testID?: string;
 }
 
 /** The bridge message for the page (see assets/leaflet/map.html). */
-export function mapMessage(poles: Pole[], breakPoint: MapBreakPoint | null, view: MapView): string {
-  return JSON.stringify({ type: 'render', poles, breakPoint, view: breakPoint ? view : 'ring' });
+export function mapMessage(poles: Pole[], breakPoint: MapBreakPoint | null, view: MapView, closed = true): string {
+  return JSON.stringify({ type: 'render', poles, closed, breakPoint, view: breakPoint ? view : 'ring' });
 }
 
 /** The bridge message with the phone's position (a separate message, so `render` stays unchanged). */
@@ -43,7 +45,7 @@ export function meMessage(me: MyLocation | null): string {
   return JSON.stringify({ type: 'me', me });
 }
 
-export function EruvMap({ poles, breakPoint = null, me = null, testID = 'eruv-map' }: EruvMapProps) {
+export function EruvMap({ poles, breakPoint = null, closed = true, me = null, testID = 'eruv-map' }: EruvMapProps) {
   const webView = useRef<WebView>(null);
   // Bumped on every "ready" from the page, so a reloaded page gets the data again.
   const [readyCount, setReadyCount] = useState(0);
@@ -54,7 +56,7 @@ export function EruvMap({ poles, breakPoint = null, me = null, testID = 'eruv-ma
   // A new break always opens centred on it (R17).
   useEffect(() => setView('break'), [breakKey]);
 
-  const message = useMemo(() => mapMessage(poles, breakPoint, view), [poles, breakPoint, view]);
+  const message = useMemo(() => mapMessage(poles, breakPoint, view, closed), [poles, breakPoint, view, closed]);
   useEffect(() => {
     if (readyCount === 0) return;
     webView.current?.injectJavaScript(`window.eruvReceive(${JSON.stringify(message)}); true;`);

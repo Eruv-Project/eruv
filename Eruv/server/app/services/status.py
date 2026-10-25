@@ -176,7 +176,9 @@ def apply_result(db: Session, bus: EventBus, device: Device, result: Result, now
     if step.transition:
         mapping = None
         if step.state == LineState.BREAK:
-            mapping = map_break(result.end_event_distance_m, city.launch_offset_m, pole_points(db, city.id))
+            mapping = map_break(
+                result.end_event_distance_m, city.launch_offset_m, pole_points(db, city.id), city.ring_closed
+            )
         pending.record(
             db, city, StatusDimension.LINE, city.line_state, step.state, now,
             replayed=result.backlog, detail=step.detail, mapping=mapping, result_id=result.id,

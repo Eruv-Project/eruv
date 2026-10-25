@@ -189,7 +189,10 @@ export const he = {
     city: {
       settings: 'הגדרות העיר',
       poles: 'עמודים',
-      poleSummary: (count: number, perimeter: string) => `${count} עמודים · היקף ${perimeter} מ'`,
+      poleSummary: (count: number, perimeter: string, closed = true) =>
+        `${count} עמודים · ${closed ? 'היקף' : 'אורך'} ${perimeter} מ'`,
+      ringClosed: 'טבעת סגורה (הסיב חוזר לעמוד 1)',
+      ringOpen: 'קו פתוח: הסיב מסתיים בעמוד האחרון (פיילוט)',
       noPoles: 'טרם יובאו עמודים',
       importPoles: 'ייבוא עמודים',
       device: 'מכשיר הניטור',
@@ -205,9 +208,9 @@ export const he = {
       referenceSet: (m: string) => `הייחוס נקבע: ${m} מ'`,
       breakActive: 'לא ניתן לקבוע ייחוס בזמן חשד לקרע או קרע בעירוב. יש לתקן את הקרע ולנסות שוב.',
       noValidResult: 'אין בדיקה תקינה עם אירוע סיום לקביעת ייחוס. יש לוודא שהמכשיר מחובר ומדווח, ולנסות שוב.',
-      confirmShortTitle: 'הסיב קצר מהיקף הטבעת',
+      confirmShortTitle: 'הסיב קצר מקו העמודים',
       confirmShort: (fiber: string, perimeter: string, pct: string) =>
-        `אורך הסיב (${fiber} מ') קצר ב-${pct}% מהיקף טבעת העמודים (${perimeter} מ'). ייתכן שקיים קרע או שהעמודים שגויים. לקבוע ייחוס בכל זאת?`,
+        `אורך הסיב (${fiber} מ') קצר ב-${pct}% מאורך קו העמודים (${perimeter} מ'). ייתכן שקיים קרע או שהעמודים שגויים. לקבוע ייחוס בכל זאת?`,
       notFound: 'העיר לא נמצאה',
     },
     poles: {
@@ -215,7 +218,8 @@ export const he = {
       explain: "בחר קובץ CSV (pole_number,lat,lon) או KML. העמודים יוצגו על המפה לבדיקה לפני השמירה.",
       pick: 'בחירת קובץ',
       file: (name: string) => `קובץ: ${name}`,
-      previewSummary: (count: number, perimeter: string) => `${count} עמודים · היקף ${perimeter} מ'`,
+      previewSummary: (count: number, perimeter: string, closed = true) =>
+        `${count} עמודים · ${closed ? 'היקף' : 'אורך'} ${perimeter} מ'`,
       errorsTitle: 'הקובץ לא תקין:',
       rowError: (row: number, message: string) => `שורה ${row}: ${message}`,
       missingNumber: (n: number) => `חסר עמוד מספר ${n}`,

@@ -145,7 +145,18 @@ describe('City admin (R25, R27)', () => {
     await fireEvent.press(screen.getByTestId('save-city-settings'));
     await act(async () => undefined);
     const patch = server.calls.find((c) => c.method === 'PATCH')!;
-    expect(patch.body).toEqual({ launch_offset_m: 45, break_tolerance_m: 25 });
+    expect(patch.body).toEqual({ launch_offset_m: 45, break_tolerance_m: 25, ring_closed: true });
+  });
+
+  it('saves an open pole line (a pilot) with the settings', async () => {
+    server.on('PATCH', '/api/admin/cities/7', { status: 200, body: adminCity({ ring_closed: false }) });
+    await openCity();
+    await fireEvent(screen.getByTestId('city-ring-closed'), 'valueChange', false);
+    expect(screen.getByText(he.admin.city.ringOpen)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('save-city-settings'));
+    await act(async () => undefined);
+    const patch = server.calls.find((c) => c.method === 'PATCH')!;
+    expect((patch.body as { ring_closed: boolean }).ring_closed).toBe(false);
   });
 
   it('rotates the device key after confirmation and shows it once, blocking back until saved', async () => {

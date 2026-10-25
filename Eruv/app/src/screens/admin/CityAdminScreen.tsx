@@ -2,10 +2,10 @@
 // device key create or rotate (R25), and setting the reference (R27, AE10).
 import { useFocusEffect, useNavigation, useRoute, type NavigationProp, type RouteProp } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Text } from 'react-native';
+import { ActivityIndicator, Switch, Text, View } from 'react-native';
 
 import { api, ApiError, errorCode, type AdminCity } from '../../api/client';
-import { Button, ErrorText, Field, Screen } from '../../components/ui';
+import { Button, colors, ErrorText, Field, Screen } from '../../components/ui';
 import { he } from '../../i18n/he';
 import { formatNumber } from '../../lib/format';
 import { formatDateTime } from '../../lib/time';
@@ -33,6 +33,7 @@ export function CityAdminScreen() {
 
   const [offset, setOffset] = useState('');
   const [tolerance, setTolerance] = useState('');
+  const [ringClosed, setRingClosed] = useState(true);
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -49,6 +50,7 @@ export function CityAdminScreen() {
       if (found) {
         setOffset(String(found.launch_offset_m));
         setTolerance(String(found.break_tolerance_m));
+        setRingClosed(found.ring_closed !== false);
       }
     } catch {
       setLoadError(he.admin.cities.loadError);
@@ -70,7 +72,7 @@ export function CityAdminScreen() {
     }
     setSavingSettings(true);
     try {
-      setCity(await api.adminUpdateCity(cityId, { launch_offset_m, break_tolerance_m }));
+      setCity(await api.adminUpdateCity(cityId, { launch_offset_m, break_tolerance_m, ring_closed: ringClosed }));
       setSettingsMsg({ ok: true, text: he.admin.saved });
     } catch {
       setSettingsMsg({ ok: false, text: he.common.genericError });
@@ -139,6 +141,17 @@ export function CityAdminScreen() {
         <Field testID="city-launch-offset" keyboardType="decimal-pad" value={offset} onChangeText={setOffset} />
         <Text style={adminStyles.note}>{he.admin.cities.breakTolerance}</Text>
         <Field testID="city-break-tolerance" keyboardType="decimal-pad" value={tolerance} onChangeText={setTolerance} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Switch
+            testID="city-ring-closed"
+            value={ringClosed}
+            onValueChange={setRingClosed}
+            trackColor={{ true: colors.primary }}
+          />
+          <Text style={[adminStyles.note, { flex: 1 }]}>
+            {ringClosed ? he.admin.city.ringClosed : he.admin.city.ringOpen}
+          </Text>
+        </View>
         {settingsMsg ? (
           <Text style={settingsMsg.ok ? adminStyles.success : adminStyles.error}>{settingsMsg.text}</Text>
         ) : null}
@@ -148,7 +161,7 @@ export function CityAdminScreen() {
       <Section title={he.admin.city.poles}>
         <Text style={adminStyles.note}>
           {city.pole_count > 0 && city.perimeter_m !== null
-            ? he.admin.city.poleSummary(city.pole_count, formatNumber(city.perimeter_m))
+            ? he.admin.city.poleSummary(city.pole_count, formatNumber(city.perimeter_m), city.ring_closed !== false)
             : he.admin.city.noPoles}
         </Text>
         <Button

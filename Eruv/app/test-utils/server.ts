@@ -105,6 +105,7 @@ export function adminCity(overrides: Record<string, unknown> = {}) {
     name: 'באר שבע',
     launch_offset_m: 30,
     break_tolerance_m: 20,
+    ring_closed: true,
     reference_fiber_length_m: null,
     reference_set_at: null,
     line_state: 'AWAITING_REFERENCE',

@@ -56,6 +56,8 @@ export interface CityStatus {
   /** What the banner shows: SUSPECT_BREAK arrives as OK. */
   display_line_state: Exclude<LineState, 'SUSPECT_BREAK'>;
   device_health: DeviceHealth;
+  /** False: the poles are an open line (a pilot), drawn without closing back to pole 1. */
+  ring_closed?: boolean;
   device_health_since: string | null;
   /** Server receive time of the last valid test result ("last check"). */
   last_result_at: string | null;
@@ -154,6 +156,7 @@ export interface AdminCity {
   name: string;
   launch_offset_m: number;
   break_tolerance_m: number;
+  ring_closed: boolean;
   reference_fiber_length_m: number | null;
   reference_set_at: string | null;
   line_state: LineState;
@@ -180,6 +183,7 @@ export interface PolePreview {
   poles: Pole[];
   count: number;
   perimeter_m: number;
+  ring_closed?: boolean;
 }
 
 /** One entry of a 422 `{"detail":{"code":"invalid_poles","errors":[...]}}`. */
@@ -362,7 +366,7 @@ export const api = {
     authedRequest<AdminUser>(`/api/admin/users/${userId}/${action}`, 'POST'),
   adminCities: () => authedRequest<AdminCity[]>('/api/admin/cities'),
   adminCreateCity: (input: CityInput) => authedRequest<AdminCity>('/api/admin/cities', 'POST', input),
-  adminUpdateCity: (cityId: number, patch: { launch_offset_m?: number; break_tolerance_m?: number }) =>
+  adminUpdateCity: (cityId: number, patch: { launch_offset_m?: number; break_tolerance_m?: number; ring_closed?: boolean }) =>
     authedRequest<AdminCity>(`/api/admin/cities/${cityId}`, 'PATCH', patch),
   adminDeviceKey: (cityId: number) => authedRequest<DeviceKey>(`/api/admin/cities/${cityId}/device-key`, 'POST'),
   adminPreviewPoles: (cityId: number, file: UploadFile) => {

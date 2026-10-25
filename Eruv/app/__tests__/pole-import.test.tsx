@@ -65,7 +65,7 @@ describe('Pole import (R26)', () => {
     // The preview map gets exactly the previewed poles, with no break.
     const web = screen.getByTestId('webview');
     await act(async () => web.props.onMessage({ nativeEvent: { data: JSON.stringify({ type: 'ready' }) } }));
-    expect(lastRender()).toEqual({ type: 'render', poles: poles(), breakPoint: null, view: 'ring' });
+    expect(lastRender()).toEqual({ type: 'render', poles: poles(), closed: true, breakPoint: null, view: 'ring' });
 
     // Saving asks first; nothing is sent before confirming.
     await fireEvent.press(screen.getByTestId('save-poles'));

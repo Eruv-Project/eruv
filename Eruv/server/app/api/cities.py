@@ -41,6 +41,8 @@ class CityStatusOut(BaseModel):
     # What the banner shows: SUSPECT_BREAK is reported as OK (R10, R16).
     display_line_state: LineState
     device_health: DeviceHealth
+    # False: the poles are an open line, drawn without the closing segment N -> 1.
+    ring_closed: bool
     # When device_health last changed ("Monitoring disconnected since HH:MM", AE7).
     device_health_since: datetime | None
     # Server receive time of the last valid test result (the "last check", R16).
@@ -71,6 +73,7 @@ def city_status(db: Session, city: City) -> CityStatusOut:
         line_state=city.line_state,
         display_line_state=visible_line_state(city.line_state),
         device_health=city.device_health,
+        ring_closed=city.ring_closed,
         device_health_since=device_event.occurred_at if device_event else None,
         last_result_at=city.last_result_at,
         active_break=active_break,
@@ -91,6 +94,6 @@ def get_city_status(city: City = Depends(require_city_access), db: Session = Dep
 
 @router.get("/{city_id}/poles", response_model=list[PoleOut])
 def list_poles(city: City = Depends(require_city_access), db: Session = Depends(get_db)) -> list[PoleOut]:
-    """The ring in number order (R15); the map draws it as a closed polygon."""
+    """The ring in number order (R15); the map closes it unless the city's ring_closed is off."""
     poles = db.scalars(select(Pole).where(Pole.city_id == city.id).order_by(Pole.number))
     return [PoleOut(number=p.number, lat=p.lat, lon=p.lon) for p in poles]

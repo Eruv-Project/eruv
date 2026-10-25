@@ -1,15 +1,17 @@
-"""Break mapping onto the closed pole ring (KTD7, R12). Pure functions.
+"""Break mapping onto the pole ring (KTD7, R12). Pure functions.
 
 Pure geographic model (session-settled): the OTDR distance minus the launch-box
 offset is walked along great-circle segments pole 1 -> 2 -> ... -> N -> 1, with no
-fiber-slack correction. Inside the bounding segment the coordinate is a linear
+fiber-slack correction. An open line (a city with ``ring_closed`` off, e.g. a pilot
+run) stops at pole N: there is no closing segment N -> 1. Inside the bounding segment the coordinate is a linear
 interpolation of latitude and longitude (segments are tens of metres long).
 
 Result kinds (JSON-able dict, stored on the BREAK status event):
 - ``between``: on segment pole_a -> pole_b, ``offset_from_a_m`` past pole_a.
 - ``at_cabinet``: distance shorter than the launch box (AE4); pole 1, pole_b None.
 - ``beyond_ring``: longer than the ring perimeter (AE5); placed at the end of the
-  last segment (pole N -> pole 1, t = 1).
+  last segment (pole N -> pole 1 on a closed ring, pole N-1 -> pole N on an open
+  line; t = 1).
 - ``unknown``: the city has fewer than two poles, so there is no ring to walk
   (a single pole still reports ``at_cabinet`` for distances inside the launch box).
 """
@@ -60,7 +62,13 @@ def _mapping(
     }
 
 
-def map_break(otdr_break_m: float, launch_offset_m: float, poles: Sequence[PolePoint]) -> dict[str, Any]:
+def _segments(ring: list[PolePoint], closed: bool) -> list[tuple[PolePoint, PolePoint]]:
+    return list(zip(ring, ring[1:] + ring[:1])) if closed else list(zip(ring, ring[1:]))
+
+
+def map_break(
+    otdr_break_m: float, launch_offset_m: float, poles: Sequence[PolePoint], closed: bool = True
+) -> dict[str, Any]:
     geo = otdr_break_m - launch_offset_m
     ring = sorted(poles, key=lambda p: p.number)
     if geo < 0 and ring:
@@ -70,7 +78,7 @@ def map_break(otdr_break_m: float, launch_offset_m: float, poles: Sequence[PoleP
         return _mapping("unknown", geo)
 
     cum = 0.0
-    segments = list(zip(ring, ring[1:] + ring[:1]))
+    segments = _segments(ring, closed)
     for a, b in segments:
         seg = haversine_m(a, b)
         if cum + seg >= geo:
@@ -83,9 +91,9 @@ def map_break(otdr_break_m: float, launch_offset_m: float, poles: Sequence[PoleP
     return _mapping("beyond_ring", geo, a, b, b.lat, b.lon, haversine_m(a, b))
 
 
-def ring_perimeter_m(poles: Sequence[PolePoint]) -> float | None:
-    """Great-circle length of the closed ring 1 -> 2 -> ... -> N -> 1; None below two poles."""
+def ring_perimeter_m(poles: Sequence[PolePoint], closed: bool = True) -> float | None:
+    """Great-circle length of 1 -> 2 -> ... -> N (-> 1 when closed); None below two poles."""
     ring = sorted(poles, key=lambda p: p.number)
     if len(ring) < 2:
         return None
-    return sum(haversine_m(a, b) for a, b in zip(ring, ring[1:] + ring[:1]))
+    return sum(haversine_m(a, b) for a, b in _segments(ring, closed))

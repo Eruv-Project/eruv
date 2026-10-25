@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 from datetime import datetime
 
-from sqlalchemy import String
+from sqlalchemy import String, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, UTCDateTime, utcnow
@@ -33,6 +33,8 @@ class City(Base):
     # Launch box length subtracted from OTDR distances before mapping (R12).
     launch_offset_m: Mapped[float] = mapped_column(default=1000.0)
     break_tolerance_m: Mapped[float] = mapped_column(default=50.0)
+    # False: an open line ending at the last pole (a pilot), no closing segment N -> 1.
+    ring_closed: Mapped[bool] = mapped_column(default=True, server_default=true())
     # Set from the latest intact result by an admin (R27); null => AWAITING_REFERENCE.
     reference_fiber_length_m: Mapped[float | None]
     reference_set_at: Mapped[datetime | None] = mapped_column(UTCDateTime())

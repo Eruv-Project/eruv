@@ -124,12 +124,14 @@ class CityCreateIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     launch_offset_m: float = Field(default=1000.0, ge=0, allow_inf_nan=False)
     break_tolerance_m: float = Field(default=50.0, gt=0, allow_inf_nan=False)
+    ring_closed: bool = True
 
 
 class CityPatchIn(BaseModel):
     # Omitted fields stay unchanged; an explicit null is rejected (422).
     launch_offset_m: float = Field(default=None, ge=0, allow_inf_nan=False)
     break_tolerance_m: float = Field(default=None, gt=0, allow_inf_nan=False)
+    ring_closed: bool = Field(default=None)
 
 
 class AdminCityOut(BaseModel):
@@ -137,6 +139,7 @@ class AdminCityOut(BaseModel):
     name: str
     launch_offset_m: float
     break_tolerance_m: float
+    ring_closed: bool
     reference_fiber_length_m: float | None
     reference_set_at: datetime | None
     line_state: LineState
@@ -169,6 +172,7 @@ def _city_out(db: Session, city: City) -> AdminCityOut:
         name=city.name,
         launch_offset_m=city.launch_offset_m,
         break_tolerance_m=city.break_tolerance_m,
+        ring_closed=city.ring_closed,
         reference_fiber_length_m=city.reference_fiber_length_m,
         reference_set_at=city.reference_set_at,
         line_state=city.line_state,
@@ -176,7 +180,7 @@ def _city_out(db: Session, city: City) -> AdminCityOut:
         has_device=device is not None,
         device_key_rotated_at=device.key_rotated_at if device else None,
         pole_count=len(poles),
-        perimeter_m=ring_perimeter_m(poles),
+        perimeter_m=ring_perimeter_m(poles, city.ring_closed),
     )
 
 
@@ -191,6 +195,7 @@ def create_city(body: CityCreateIn, db: Session = Depends(get_db)) -> AdminCityO
         name=body.name.strip(),
         launch_offset_m=body.launch_offset_m,
         break_tolerance_m=body.break_tolerance_m,
+        ring_closed=body.ring_closed,
     )
     db.add(city)
     try:
@@ -203,7 +208,7 @@ def create_city(body: CityCreateIn, db: Session = Depends(get_db)) -> AdminCityO
 
 @router.patch("/cities/{city_id}", response_model=AdminCityOut)
 def update_city(city_id: int, body: CityPatchIn, db: Session = Depends(get_db)) -> AdminCityOut:
-    """Edit the launch-box offset and break tolerance (R27)."""
+    """Edit the launch-box offset, break tolerance and open/closed ring (R27)."""
     with STATE_LOCK:  # the status engine reads both values while applying a result
         city = _city_or_404(db, city_id)
         for field in body.model_fields_set:
@@ -241,6 +246,7 @@ class PolesPreviewOut(BaseModel):
     poles: list[PoleIO]
     count: int
     perimeter_m: float | None
+    ring_closed: bool
 
 
 class PolesIn(BaseModel):
@@ -261,7 +267,7 @@ def _invalid_poles(exc: PoleImportError) -> HTTPException:
 @router.post("/cities/{city_id}/poles/preview", response_model=PolesPreviewOut)
 def preview_poles(city_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)) -> PolesPreviewOut:
     """Parse a CSV or KML pole file for the map preview. Nothing is saved."""
-    _city_or_404(db, city_id)
+    city = _city_or_404(db, city_id)
     try:
         poles = parse_poles(file.file.read(), file.filename)
     except PoleImportError as exc:
@@ -269,14 +275,15 @@ def preview_poles(city_id: int, file: UploadFile = File(...), db: Session = Depe
     return PolesPreviewOut(
         poles=[PoleIO(number=p.number, lat=p.lat, lon=p.lon) for p in poles],
         count=len(poles),
-        perimeter_m=ring_perimeter_m(poles),
+        perimeter_m=ring_perimeter_m(poles, city.ring_closed),
+        ring_closed=city.ring_closed,
     )
 
 
 @router.put("/cities/{city_id}/poles", response_model=PolesSavedOut)
 def replace_poles(city_id: int, body: PolesIn, db: Session = Depends(get_db)) -> PolesSavedOut:
     """Replace the city's ring in one transaction; invalid input leaves the old ring."""
-    _city_or_404(db, city_id)
+    city = _city_or_404(db, city_id)
     try:
         poles = check_points(PolePoint(p.number, p.lat, p.lon) for p in body.poles)
     except PoleImportError as exc:
@@ -285,7 +292,7 @@ def replace_poles(city_id: int, body: PolesIn, db: Session = Depends(get_db)) ->
         db.execute(delete(Pole).where(Pole.city_id == city_id))
         db.add_all(Pole(city_id=city_id, number=p.number, lat=p.lat, lon=p.lon) for p in poles)
         db.commit()
-    return PolesSavedOut(count=len(poles), perimeter_m=ring_perimeter_m(poles))
+    return PolesSavedOut(count=len(poles), perimeter_m=ring_perimeter_m(poles, city.ring_closed))
 
 
 # --- reference (R27, AE10) --------------------------------------------------------------
@@ -340,7 +347,7 @@ def set_city_reference(
 
         end_m = latest.end_event_distance_m
         fiber_m = end_m - city.launch_offset_m
-        perimeter = ring_perimeter_m(pole_points(db, city_id))
+        perimeter = ring_perimeter_m(pole_points(db, city_id), city.ring_closed)
         if perimeter:
             shortfall_pct = (perimeter - fiber_m) / perimeter * 100.0
             if shortfall_pct > SHORT_FIBER_CONFIRM_PCT and not body.confirm_short:

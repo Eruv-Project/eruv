@@ -117,6 +117,21 @@ def test_city_list_and_patch(client: TestClient, db: Session, admin_headers) -> 
         assert client.patch(f"/api/admin/cities/{city}", json=bad, headers=admin_headers).status_code == 422
 
 
+def test_open_line_city_measures_without_the_closing_segment(client: TestClient, db: Session, admin_headers) -> None:
+    city = seed_city(db, "Be'er Sheva", device_key=KEY)
+    r = client.patch(f"/api/admin/cities/{city}", json={"ring_closed": False}, headers=admin_headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["ring_closed"] is False
+    assert r.json()["perimeter_m"] == pytest.approx(PERIMETER / 2, rel=1e-6)
+    assert client.patch(f"/api/admin/cities/{city}", json={"ring_closed": None}, headers=admin_headers).status_code == 422
+
+    # The open line is 15 km: a 15 km fiber needs no short-fiber confirmation.
+    _add_message(db, city, 1, end=1000.0 + PERIMETER / 2)
+    assert _reference(client, admin_headers, city).status_code == 200
+    created = client.post("/api/admin/cities", json={"name": "Ashdod"}, headers=admin_headers)
+    assert created.json()["ring_closed"] is True
+
+
 def test_device_key_shown_once_and_rotation_invalidates_old_key(client: TestClient, admin_headers) -> None:
     city = create_city(client, admin_headers, "Be'er Sheva")
     r = client.post(f"/api/admin/cities/{city}/device-key", headers=admin_headers)

@@ -58,6 +58,7 @@ describe('CityScreen (R15, R17)', () => {
     expect(sent).toEqual({
       type: 'render',
       poles: poles(),
+      closed: true,
       breakPoint: { lat: 31.2505, lon: 34.793, poles: [2, 3] },
       view: 'break',
     });

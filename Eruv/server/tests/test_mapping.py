@@ -11,7 +11,7 @@ import math
 
 import pytest
 
-from app.mapping import EARTH_RADIUS_M, PolePoint, map_break
+from app.mapping import EARTH_RADIUS_M, PolePoint, map_break, ring_perimeter_m
 
 BASE_LAT = 31.25
 LON = 34.79
@@ -92,3 +92,16 @@ def test_fewer_than_two_poles_is_unknown() -> None:
     assert m["kind"] == "unknown"
     assert m["geo_distance_m"] == pytest.approx(5000.0)
     assert map_break(otdr_break_m=6000.0, launch_offset_m=1000.0, poles=[])["kind"] == "unknown"
+
+
+def test_open_line_has_no_closing_segment() -> None:
+    poles = meridian_ring(FOUR)
+    assert ring_perimeter_m(poles, closed=False) == pytest.approx(12000.0, abs=0.01)
+    assert ring_perimeter_m(poles) == pytest.approx(24000.0, abs=0.01)
+    # 12400 m lands on the closing segment of a ring (above); an open line ends at pole 4.
+    m = map_break(otdr_break_m=13400.0, launch_offset_m=1000.0, poles=poles, closed=False)
+    assert m["kind"] == "beyond_ring"
+    assert (m["pole_a"], m["pole_b"]) == (3, 4)
+    assert (m["lat"], m["lon"]) == pytest.approx((poles[3].lat, poles[3].lon))
+    inside = map_break(otdr_break_m=6000.0, launch_offset_m=1000.0, poles=poles, closed=False)
+    assert (inside["kind"], inside["pole_a"], inside["pole_b"]) == ("between", 2, 3)

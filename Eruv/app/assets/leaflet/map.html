@@ -11,7 +11,7 @@
 
   Bridge: the app calls window.eruvReceive(message) (also accepted as a
   window/document "message" event). Message:
-    { "type": "render", "poles": [{number, lat, lon}], "view": "break" | "ring",
+    { "type": "render", "poles": [{number, lat, lon}], "closed": bool, "view": "break" | "ring",
       "breakPoint": null | { "lat", "lon", "poles": [bounding pole numbers] } }
   Also { "type": "me", "me": null | { "lat", "lon", "accuracy" } } (the phone's
   position, a blue dot) and { "type": "center-me" } (centre the map on it).
@@ -151,10 +151,12 @@
           var bp = message.breakPoint;
           var points = message.poles.map(function (p) { return [p.lat, p.lon]; });
           if (points.length >= 2) {
-            // Closed ring in pole-number order (the server sends poles ordered).
+            // Pole-number order (the server sends poles ordered): a closed ring, or an
+            // open line ending at the last pole when "closed" is false (a pilot).
             // The lit fiber: a soft glow under a bright line, as in the app icon.
-            L.polygon(points, { color: FIBER, weight: 12, opacity: 0.18, fill: false, interactive: false }).addTo(shapes);
-            L.polygon(points, { color: FIBER, weight: 3, fillColor: FIBER, fillOpacity: 0.06, interactive: false }).addTo(shapes);
+            var shape = message.closed === false ? L.polyline : L.polygon;
+            shape(points, { color: FIBER, weight: 12, opacity: 0.18, fill: false, interactive: false }).addTo(shapes);
+            shape(points, { color: FIBER, weight: 3, fillColor: FIBER, fillOpacity: 0.06, interactive: false }).addTo(shapes);
           }
           if (bp && bp.poles.length === 2) {
             var ends = message.poles.filter(function (p) { return highlighted(p.number); });
