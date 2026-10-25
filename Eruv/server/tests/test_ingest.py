@@ -213,6 +213,26 @@ def test_ae1_two_break_results_give_one_break_event_with_mapping(app: FastAPI, p
     assert sum(isinstance(e, ResultReceived) for e in bus_log) == 3
 
 
+def test_break_moving_closer_moves_the_mapped_place_after_two_readings(
+    app: FastAPI, pi: Pi, city_id: int, bus_log: list
+) -> None:
+    pi.heartbeat(0)
+    reference(app, city_id)
+    pi.result(13400.0, at=10)
+    pi.result(13400.0, at=20)
+    pi.result(13400.0, at=30)  # the same break again: nothing new
+    pi.result(1000.0, at=40)  # cut again at the cabinet: one reading moves nothing
+    assert len([e for e in events(app, city_id) if e.to_state == "BREAK"]) == 1
+    pi.result(1000.2, at=50)
+    into_break = [e for e in events(app, city_id) if e.to_state == "BREAK"]
+    assert len(into_break) == 2
+    moved = into_break[-1]
+    assert moved.from_state == "BREAK" and moved.mapping["pole_a"] == 1
+    assert moved.mapping["geo_distance_m"] == pytest.approx(0.2)
+    assert sum(isinstance(e, StatusChanged) and e.to_state == "BREAK" for e in bus_log) == 2
+    assert city(app, city_id).line_state == LineState.BREAK
+
+
 def test_ae2_break_then_intact_logs_a_suspect_reading_only(app: FastAPI, pi: Pi, city_id: int) -> None:
     pi.heartbeat(0)
     reference(app, city_id)

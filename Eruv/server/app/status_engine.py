@@ -10,6 +10,9 @@ Decisions recorded here:
   break candidate), and it does not count as a valid result for device health.
 - Every path into BREAK goes through SUSPECT_BREAK. A second break reading at a
   different place (outside tolerance) stays SUSPECT_BREAK with the newer candidate.
+- In BREAK, a break reading at a new place (outside tolerance of the active break)
+  becomes the candidate; a second reading that agrees with it moves the break
+  (a BREAK -> BREAK edge with the new place). One stray reading moves nothing.
 - After a reconnect the break candidate is dropped, so one break result after an
   outage can never confirm a break on its own (KTD6, "including after a reconnect").
 """
@@ -43,6 +46,7 @@ def line_on_result(
     end_event_m: float | None,
     reference_m: float | None,
     tolerance_m: float,
+    active_break_m: float | None = None,
 ) -> LineStep:
     if end_event_m is None:
         return LineStep(state, suspect_distance_m, False, usable=False)
@@ -85,7 +89,17 @@ def line_on_result(
             True,
             f"suspect reading: end event {end_event_m:.1f} m (previous candidate {previous}), not confirmed",
         )
-    return LineStep(LineState.BREAK, None, False)
+    # BREAK: ``active_break_m`` is the end event of the reading that confirmed it.
+    if active_break_m is None or abs(end_event_m - active_break_m) <= tolerance_m:
+        return LineStep(LineState.BREAK, None, False)
+    if suspect_distance_m is not None and abs(end_event_m - suspect_distance_m) <= tolerance_m:
+        return LineStep(
+            LineState.BREAK,
+            None,
+            True,
+            f"break moved to {end_event_m:.1f} m (was {active_break_m:.1f} m)",
+        )
+    return LineStep(LineState.BREAK, end_event_m, False)
 
 
 def visible_line_state(state: LineState | str) -> LineState:

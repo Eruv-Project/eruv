@@ -123,6 +123,15 @@ def pole_points(db: Session, city_id: int) -> list[PolePoint]:
     return [PolePoint(p.number, p.lat, p.lon) for p in rows]
 
 
+def active_break_m(db: Session, city: City) -> float | None:
+    """End event of the reading behind the current BREAK, or None outside BREAK."""
+    if city.line_state != LineState.BREAK:
+        return None
+    event = latest_event(db, city.id, StatusDimension.LINE, LineState.BREAK.value)
+    result = db.get(Result, event.result_id) if event is not None and event.result_id is not None else None
+    return result.end_event_distance_m if result is not None else None
+
+
 def _reconnect(db: Session, pending: Pending, device: Device, city: City, now: datetime) -> None:
     """Any accepted device message proves the uplink is back (KTD6).
 
@@ -160,6 +169,7 @@ def apply_result(db: Session, bus: EventBus, device: Device, result: Result, now
         result.end_event_distance_m,
         city.reference_fiber_length_m,
         city.break_tolerance_m,
+        active_break_m(db, city),
     )
     if not step.usable:
         log.warning("city %s: result seq %s has no end event; line state unchanged", city.id, result.seq)

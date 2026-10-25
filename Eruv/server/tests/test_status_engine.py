@@ -89,6 +89,17 @@ def test_break_result_while_in_break_stays_break_silently() -> None:
     assert step.state == LineState.BREAK and not step.transition
 
 
+def test_break_at_a_new_place_moves_only_after_two_agreeing_readings() -> None:
+    same = line_on_result(LineState.BREAK, None, 13405.0, REF, TOL, active_break_m=13400.0)
+    assert (same.state, same.suspect_distance_m, same.transition) == (LineState.BREAK, None, False)
+    first = line_on_result(LineState.BREAK, None, 2000.0, REF, TOL, active_break_m=13400.0)
+    assert (first.state, first.suspect_distance_m, first.transition) == (LineState.BREAK, 2000.0, False)
+    second = line_on_result(LineState.BREAK, 2000.0, 2010.0, REF, TOL, active_break_m=13400.0)
+    assert (second.state, second.suspect_distance_m, second.transition) == (LineState.BREAK, None, True)
+    stray = line_on_result(LineState.BREAK, 2000.0, 13401.0, REF, TOL, active_break_m=13400.0)
+    assert (stray.suspect_distance_m, stray.transition) == (None, False)
+
+
 def test_null_end_event_changes_nothing() -> None:
     step = line_on_result(LineState.SUSPECT_BREAK, 13400.0, None, REF, TOL)
     assert step.state == LineState.SUSPECT_BREAK
