@@ -32,7 +32,7 @@ This file is the contract between the Pi agent (`pi-agent/`) and the server (`se
 
 ## Backlog detection (`queued_s`)
 
-Every result and fault carries `queued_s`: how many seconds the message waited in the Pi's spool before this delivery attempt, measured with a monotonic clock. It is correct even when the wall clock is wrong.
+Every result and fault carries `queued_s`: how many seconds the message waited in the Pi's spool before this delivery attempt, measured with a monotonic clock. It is correct even when the wall clock is wrong. A message spooled before a reboot, delivered before the Pi's clock has synced from NTP, has an unknown age and reports at least 3600 s, so it is backlog.
 
 The server treats a message with `queued_s > 120` (2 cadence periods) as **backlog**. Backlog messages drive the status engine and are logged, but their transitions are marked `replayed` and are not pushed individually. When the backlog drains, the server sends at most one push with the current state, if it differs from the state last pushed.
 

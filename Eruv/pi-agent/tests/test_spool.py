@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from eruv_agent.spool import Spool
+from eruv_agent.spool import UNSYNCED_PREVIOUS_BOOT_S, Spool
 
 
 class FakeClock:
-    def __init__(self, mono: float = 1000.0, wall: float = 1_790_000_000.0, boot: str = "boot-a") -> None:
+    def __init__(
+        self, mono: float = 1000.0, wall: float = 1_790_000_000.0, boot: str = "boot-a", synced: bool = True
+    ) -> None:
         self.mono = mono
         self.wall_s = wall
         self.boot = boot
+        self.is_synced = synced
 
     def monotonic(self) -> float:
         return self.mono
@@ -22,6 +25,9 @@ class FakeClock:
 
     def uptime_s(self) -> float:
         return self.mono
+
+    def synced(self) -> bool:
+        return self.is_synced
 
     def advance(self, s: float) -> None:
         self.mono += s
@@ -77,9 +83,15 @@ def test_queued_s_after_reboot_is_at_least_uptime(tmp_path):
     before = FakeClock(mono=5000.0, wall=1_790_000_000.0, boot="boot-a")
     Spool(path, capacity=10, clock=before).enqueue("result", payload)
 
-    # Rebooted 40 s ago; the wall clock is still wrong (earlier than before).
+    # Rebooted 40 s ago; the wall clock is still wrong (earlier than before) but NTP says synced.
     after = FakeClock(mono=40.0, wall=1_700_000_000.0, boot="boot-b")
     assert Spool(path, capacity=10, clock=after).peek().queued_s(after) == 40.0
+
+    # Before NTP has synced the age is unknown: reported as old enough to be backlog.
+    unsynced = FakeClock(mono=40.0, wall=1_790_000_010.0, boot="boot-b", synced=False)
+    assert Spool(path, capacity=10, clock=unsynced).peek().queued_s(unsynced) == UNSYNCED_PREVIOUS_BOOT_S
+    same_boot = FakeClock(mono=5010.0, boot="boot-a", synced=False)
+    assert Spool(path, capacity=10, clock=same_boot).peek().queued_s(same_boot) == 10.0
 
     # Once NTP has synced, the wall-clock gap is used when it is larger.
     synced = FakeClock(mono=40.0, wall=1_790_000_600.0, boot="boot-b")

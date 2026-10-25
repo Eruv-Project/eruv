@@ -13,6 +13,10 @@ stores the monotonic time and the kernel boot id at enqueue:
 - after a reboot the old monotonic value is meaningless, but the message is at
   least as old as the current boot, so ``queued_s = max(uptime, wall-clock gap)``.
   The wall-clock gap only counts once it is larger, i.e. after NTP has synced.
+  Until NTP has synced the real age is unknown (a Pi without an RTC battery
+  boots with the clock from shutdown, and on the SIM the sync took 19 minutes),
+  so such a message reports at least ``UNSYNCED_PREVIOUS_BOOT_S``: the server
+  then treats it as backlog instead of a fresh reading.
 """
 
 from __future__ import annotations
@@ -29,6 +33,10 @@ from typing import Callable
 log = logging.getLogger(__name__)
 
 _PROCESS_BOOT_ID = f"process-{uuid.uuid4()}"  # fallback when the kernel has no boot id
+# Far above the server's backlog threshold (2 cadence periods).
+UNSYNCED_PREVIOUS_BOOT_S = 3600.0
+# systemd-timesyncd creates this once the clock is set from NTP.
+_TIMESYNC_FLAG = Path("/run/systemd/timesync/synchronized")
 
 
 class SystemClock:
@@ -50,6 +58,9 @@ class SystemClock:
         except (OSError, ValueError, IndexError):
             return time.monotonic()
 
+    def synced(self) -> bool:
+        return _TIMESYNC_FLAG.exists()
+
 
 @dataclass(frozen=True)
 class SpooledMessage:
@@ -63,7 +74,8 @@ class SpooledMessage:
     def queued_s(self, clock) -> float:
         if clock.boot_id() == self.boot_id:
             return max(0.0, clock.monotonic() - self.enqueued_mono)
-        return max(0.0, clock.uptime_s(), clock.wall() - self.enqueued_wall)
+        age = max(0.0, clock.uptime_s(), clock.wall() - self.enqueued_wall)
+        return age if clock.synced() else max(age, UNSYNCED_PREVIOUS_BOOT_S)
 
 
 class Spool:
