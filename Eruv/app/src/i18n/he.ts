@@ -254,6 +254,12 @@ export const he = {
     versionEmbedded: 'מקורית',
     versionUpdate: 'עדכון',
   },
+  greeting: {
+    morning: 'בוקר טוב',
+    noon: 'צהריים טובים',
+    evening: 'ערב טוב',
+    goodWeek: 'שבוע טוב',
+  },
   notifications: {
     warning: 'התראות כבויות — לא תקבל הודעה על קטיעה בעירוב',
     openSettings: 'פתח הגדרות',

@@ -144,10 +144,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   toggleText: { color: colors.primary, fontSize: 15, fontWeight: '700' },
+  // Opposite corner from Leaflet's +/- zoom buttons (top-left), so neither hides the other.
   meButton: {
     position: 'absolute',
     top: 12,
-    end: 12,
+    start: 12,
     width: 46,
     height: 46,
     borderRadius: 23,

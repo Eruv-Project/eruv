@@ -112,7 +112,7 @@ export function StatusBanner({
   return (
     <View testID="status-banner" accessibilityRole="summary" style={[styles.banner, { backgroundColor: bannerColors[model.tone] }]}>
       <View style={styles.hero}>
-        <StatusRing tone={model.tone} />
+        <StatusRing tone={model.tone} size={52} />
         <View style={styles.heroText}>
           <View style={styles.titleRow}>
             <Text testID="banner-title" style={[styles.title, { color: model.tone === 'neutral' ? colors.text : toneColors[model.tone] }]}>
@@ -160,15 +160,15 @@ export function StatusBanner({
 }
 
 const styles = StyleSheet.create({
-  banner: { paddingHorizontal: 18, paddingVertical: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: palette.rule },
-  hero: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  heroText: { flex: 1, gap: 4 },
+  banner: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, borderBottomWidth: 1, borderBottomColor: palette.rule },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  heroText: { flex: 1, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { flex: 1, fontFamily: fonts.display, fontSize: 26, lineHeight: 34, textAlign: 'left' },
-  secondary: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
-  secondaryText: { color: colors.text, fontSize: 15, fontWeight: '600', textAlign: 'left' },
+  title: { flex: 1, fontFamily: fonts.display, fontSize: 20, lineHeight: 26, textAlign: 'left' },
+  secondary: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
+  secondaryText: { color: colors.text, fontSize: 14, fontWeight: '600', textAlign: 'left' },
   help: { color: colors.text, fontSize: 14, lineHeight: 21, textAlign: 'left' },
-  meta: { color: colors.muted, fontSize: 14, textAlign: 'left' },
+  meta: { color: colors.muted, fontSize: 13, textAlign: 'left' },
   navButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: palette.breakRed,
     borderRadius: 10,
-    paddingVertical: 13,
+    paddingVertical: 9,
   },
-  navText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  navText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   pressed: { opacity: 0.8 },
 });

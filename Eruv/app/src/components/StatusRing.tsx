@@ -5,9 +5,11 @@ import Svg, { Circle } from 'react-native-svg';
 
 import { type BannerTone, toneColors } from './tones';
 
-const STROKE = 7;
+/** Ring width as a fraction of its size (7 px at the original 84). */
+const STROKE_RATIO = 1 / 12;
 
 export function StatusRing({ tone, size = 84 }: { tone: BannerTone; size?: number }) {
+  const STROKE = size * STROKE_RATIO;
   const r = (size - STROKE * 3) / 2;
   const c = size / 2;
   const circumference = 2 * Math.PI * r;

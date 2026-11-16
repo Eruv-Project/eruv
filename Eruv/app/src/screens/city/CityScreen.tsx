@@ -12,6 +12,7 @@ import { NotificationWarningStrip } from '../../components/NotificationWarningSt
 import { StatusBanner } from '../../components/StatusBanner';
 import { colors, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
+import { greeting } from '../../lib/greeting';
 import { useMyLocation } from '../../lib/useMyLocation';
 import { useAuthStore } from '../../state/auth';
 import { useCityStatus } from '../../state/cityStatus';
@@ -45,6 +46,7 @@ function useTabFocused(): boolean {
 
 export function CityScreen() {
   const cityId = useAuthStore((s) => s.activeCityId);
+  const userName = useAuthStore((s) => s.user?.name);
   const { view, now, refresh } = useCityStatus(cityId);
   const status = view.live.status;
   const breakPoint = useMemo(() => mapBreakPoint(status), [status]);
@@ -60,9 +62,14 @@ export function CityScreen() {
     body = (
       <>
         <View style={styles.header}>
-          <Text testID="city-name" style={styles.name}>
-            {status.name}
-          </Text>
+          <View style={styles.titles}>
+            <Text testID="city-greeting" style={styles.greeting}>
+              {greeting(userName, new Date(now))}
+            </Text>
+            <Text testID="city-name" style={styles.name}>
+              {status.name}
+            </Text>
+          </View>
           <Pressable
             testID="city-refresh"
             accessibilityRole="button"
@@ -113,10 +120,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingTop: 8,
     paddingBottom: 6,
   },
-  name: { flex: 1, fontFamily: fonts.display, fontSize: 24, lineHeight: 32, color: colors.gold, textAlign: 'left' },
+  titles: { flex: 1 },
+  greeting: { fontSize: 15, color: colors.muted, textAlign: 'left' },
+  name: { fontFamily: fonts.display, fontSize: 22, lineHeight: 28, color: colors.gold, textAlign: 'left' },
   refresh: {
     width: 40,
     height: 40,
