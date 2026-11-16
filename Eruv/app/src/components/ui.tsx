@@ -1,38 +1,44 @@
 // Design tokens and small shared building blocks.
 //
-// The palette comes from the app icon: a night-navy ground, the glowing cyan of
-// the fiber, gold for the eruv's poles and names. Red and orange appear only for
+// Light theme, "blue with a coloured bar": a soft blue-white ground, white cards,
+// royal blue for the header bar, titles and actions, gold for the eruv's poles.
+// The icon's night navy stays only on the splash. Red and orange appear only for
 // a break and for monitoring problems, so they always mean something.
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, type TextInputProps } from 'react-native';
 
 export const palette = {
+  /** The icon's ground: the splash only. */
   night: '#0C182A',
-  deck: '#13243C',
-  raised: '#1A2E4A',
-  rule: '#2A4064',
-  fiber: '#3FD8FF',
-  gold: '#E6B850',
-  ink: '#EDF3FA',
-  mist: '#93A6BF',
-  breakRed: '#FF5D5D',
-  warn: '#FF9F43',
+  page: '#F0F3F9',
+  card: '#FFFFFF',
+  rule: '#D5DCE8',
+  blue: '#1D4E9E',
+  fiber: '#2563C4',
+  gold: '#E9A83A',
+  ink: '#141C2E',
+  mist: '#5A616F',
+  breakRed: '#C93636',
+  warn: '#B45F0E',
 };
 
 export const colors = {
-  primary: palette.fiber,
-  /** Text on a fiber-coloured fill. */
-  onPrimary: palette.night,
+  primary: palette.blue,
+  /** Text on a primary-coloured fill. */
+  onPrimary: '#FFFFFF',
   text: palette.ink,
   muted: palette.mist,
   danger: palette.breakRed,
-  warningBg: '#3B1E26',
+  warningBg: '#FDECEC',
   border: palette.rule,
-  selected: '#16385A',
-  success: '#2FD3A0',
-  background: palette.night,
-  surface: palette.deck,
+  selected: '#DCE6F7',
+  success: '#1E7A50',
+  background: palette.page,
+  surface: palette.card,
   gold: palette.gold,
+  /** The header bar behind the screen titles and the status bar. */
+  bar: palette.blue,
+  onBar: '#FFFFFF',
 };
 
 /** Frank Ruhl Libre: a traditional Hebrew serif for headlines (loaded in App.tsx). */

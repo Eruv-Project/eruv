@@ -3,13 +3,20 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
 import { I18nManager, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Splash } from './src/components/Splash';
 import { colors } from './src/components/ui';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { configureNotifications } from './src/notifications';
 import { useAuthStore } from './src/state/auth';
+
+/** The blue bar behind the phone's status bar on every screen, so its light icons
+ * stay readable over the light screens that have no header (sign-in, pending). */
+function StatusBarBackdrop() {
+  const { top } = useSafeAreaInsets();
+  return <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: top, backgroundColor: colors.bar }} />;
+}
 
 // Hebrew UI is right-to-left (R18). app.config.ts also forces RTL natively
 // (expo-localization forcesRTL) so the very first launch is already mirrored.
@@ -38,6 +45,7 @@ export default function App() {
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         {fontsSettled ? <RootNavigator /> : null}
+        <StatusBarBackdrop />
         <Splash ready={fontsSettled && phase !== 'loading'} onShown={hideNativeSplash} />
       </View>
       <StatusBar style="light" />

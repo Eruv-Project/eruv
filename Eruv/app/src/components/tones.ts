@@ -1,5 +1,5 @@
-// Status tones: a bright mark colour (ring, log dots) and a dark tinted ground
-// (the status panel), both drawn from the icon's palette.
+// Status tones: a strong mark colour (ring, log dots, titles) and a light tinted
+// ground (the status panel).
 import { palette } from './ui';
 
 export type BannerTone = 'ok' | 'break' | 'warning' | 'neutral';
@@ -12,8 +12,8 @@ export const toneColors: Record<BannerTone, string> = {
 };
 
 export const bannerColors: Record<BannerTone, string> = {
-  ok: '#0E3044',
-  break: '#4A1622',
-  warning: '#43280F',
-  neutral: '#1A2B44',
+  ok: '#FFFFFF',
+  break: '#FDECEC',
+  warning: '#FDF1E3',
+  neutral: '#EEF1F6',
 };

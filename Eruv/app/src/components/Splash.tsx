@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Image, StyleSheet, useWindowDimensions } from 'react-native';
 
-import { colors } from './ui';
+import { palette } from './ui';
 
 const ARTWORK = require('../../assets/icon.png');
 const MIN_SHOWN_MS = 1400;
@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: colors.background,
+    // The icon's own night navy, matching the native splash before it.
+    backgroundColor: palette.night,
     alignItems: 'center',
     justifyContent: 'center',
   },

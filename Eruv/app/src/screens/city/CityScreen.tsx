@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   titles: { flex: 1 },
   greeting: { fontSize: 15, color: colors.muted, textAlign: 'left' },
-  name: { fontFamily: fonts.display, fontSize: 22, lineHeight: 28, color: colors.gold, textAlign: 'left' },
+  name: { fontFamily: fonts.display, fontSize: 22, lineHeight: 28, color: colors.primary, textAlign: 'left' },
   refresh: {
     width: 40,
     height: 40,
