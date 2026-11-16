@@ -1,5 +1,6 @@
-// The greeting above the city ("בוקר טוב עודד"), by the phone's clock. On Motzaei
-// Shabbat (Saturday after nightfall, through the night) it is "שבוע טוב".
+// The greeting above the city ("בוקר טוב עודד"), by the phone's clock. From Friday
+// noon until nightfall on Saturday it is "שבת שלום"; on Motzaei Shabbat (Saturday
+// after nightfall, through the night) it is "שבוע טוב".
 import { he } from '../i18n/he';
 
 /** Nightfall used for the end of Shabbat: sunset plus this many minutes. */
@@ -31,17 +32,26 @@ export function sunsetUtc(date: Date, lat = LAT, lon = LON): number {
   return dayStart + ut * 3600000;
 }
 
+function afterNightfall(now: Date): boolean {
+  return now.getTime() >= sunsetUtc(now) + NIGHTFALL_AFTER_SUNSET_MIN * 60000;
+}
+
+function isShabbat(now: Date): boolean {
+  const day = now.getDay();
+  return (day === 5 && now.getHours() >= 12) || (day === 6 && !afterNightfall(now));
+}
+
 function isMotzaeiShabbat(now: Date): boolean {
   const day = now.getDay();
-  if (day === 6) return now.getTime() >= sunsetUtc(now) + NIGHTFALL_AFTER_SUNSET_MIN * 60000;
-  return day === 0 && now.getHours() < 5;
+  return (day === 6 && afterNightfall(now)) || (day === 0 && now.getHours() < 5);
 }
 
 /** "בוקר טוב עודד": the first word of the user's name, or the greeting alone. */
 export function greeting(name: string | null | undefined, now: Date): string {
   const hour = now.getHours();
   let text: string;
-  if (isMotzaeiShabbat(now)) text = he.greeting.goodWeek;
+  if (isShabbat(now)) text = he.greeting.shabbat;
+  else if (isMotzaeiShabbat(now)) text = he.greeting.goodWeek;
   else if (hour >= 5 && hour < 12) text = he.greeting.morning;
   else if (hour >= 12 && hour < 17) text = he.greeting.noon;
   else text = he.greeting.evening;

@@ -25,11 +25,18 @@ describe('greeting', () => {
 
   it('says "שבוע טוב" from nightfall on Saturday through the night', () => {
     // Saturday 21 Nov 2026: sunset ~16:40, nightfall ~17:20.
-    expect(greeting('עודד', at('2026-11-21T16:00:00+02:00'))).toBe('צהריים טובים עודד');
-    expect(greeting('עודד', at('2026-11-21T17:00:00+02:00'))).toBe('ערב טוב עודד');
+    expect(greeting('עודד', at('2026-11-21T16:00:00+02:00'))).toBe('שבת שלום עודד');
+    expect(greeting('עודד', at('2026-11-21T17:00:00+02:00'))).toBe('שבת שלום עודד');
     expect(greeting('עודד', at('2026-11-21T17:30:00+02:00'))).toBe('שבוע טוב עודד');
     expect(greeting('עודד', at('2026-11-22T01:00:00+02:00'))).toBe('שבוע טוב עודד');
     expect(greeting('עודד', at('2026-11-22T08:00:00+02:00'))).toBe('בוקר טוב עודד');
+  });
+
+  it('says "שבת שלום" from Friday noon until nightfall on Saturday', () => {
+    expect(greeting('עודד', at('2026-11-20T11:30:00+02:00'))).toBe('בוקר טוב עודד');
+    expect(greeting('עודד', at('2026-11-20T12:00:00+02:00'))).toBe('שבת שלום עודד');
+    expect(greeting('עודד', at('2026-11-20T22:00:00+02:00'))).toBe('שבת שלום עודד');
+    expect(greeting('עודד', at('2026-11-21T09:00:00+02:00'))).toBe('שבת שלום עודד');
   });
 
   it('greets without a name when there is none', () => {

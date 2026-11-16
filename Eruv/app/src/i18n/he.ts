@@ -259,6 +259,7 @@ export const he = {
     noon: 'צהריים טובים',
     evening: 'ערב טוב',
     goodWeek: 'שבוע טוב',
+    shabbat: 'שבת שלום',
   },
   notifications: {
     warning: 'התראות כבויות — לא תקבל הודעה על קטיעה בעירוב',
