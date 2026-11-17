@@ -9,8 +9,10 @@ import { openNavigation } from '../lib/navLinks';
 import { formatClock, formatRelative } from '../lib/time';
 import { isStale } from '../state/cityStatus';
 import { StatusRing } from './StatusRing';
-import { type BannerTone, bannerColors, toneColors } from './tones';
+import { type BannerTone, bannerColors, tintColors, toneColors } from './tones';
 import { colors, fonts, palette } from './ui';
+
+export { tintColors };
 
 export { type BannerTone, bannerColors, toneColors };
 
@@ -110,7 +112,14 @@ export function StatusBanner({
   const navigate = model.navigate;
 
   return (
-    <View testID="status-banner" accessibilityRole="summary" style={[styles.banner, { backgroundColor: bannerColors[model.tone] }]}>
+    <View
+      testID="status-banner"
+      accessibilityRole="summary"
+      style={[
+        styles.banner,
+        { backgroundColor: bannerColors[model.tone], borderColor: model.tone === 'ok' ? colors.border : tintColors[model.tone].border },
+      ]}
+    >
       <View style={styles.hero}>
         <StatusRing tone={model.tone} size={52} />
         <View style={styles.heroText}>
@@ -160,7 +169,21 @@ export function StatusBanner({
 }
 
 const styles = StyleSheet.create({
-  banner: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, borderBottomWidth: 1, borderBottomColor: palette.rule },
+  // A rounded card set in from the screen edges, like the map below it.
+  banner: {
+    marginHorizontal: 14,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#1D4E9E',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   heroText: { flex: 1, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

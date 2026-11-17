@@ -125,8 +125,19 @@ export function EruvMap({ poles, breakPoint = null, closed = true, me = null, te
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  webView: { flex: 1, backgroundColor: colors.background },
+  // The map sits in a rounded frame set in from the screen edges.
+  container: {
+    flex: 1,
+    marginHorizontal: 14,
+    marginBottom: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+  },
+  // Opacity just under 1 makes Android clip the WebView to the rounded frame.
+  webView: { flex: 1, backgroundColor: colors.surface, opacity: 0.99 },
   toggle: {
     position: 'absolute',
     bottom: 24,
