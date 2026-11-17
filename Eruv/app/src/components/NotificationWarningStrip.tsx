@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { he } from '../i18n/he';
 import { useNotificationWarning } from '../notifications';
-import { colors } from './ui';
+import { colors, fonts } from './ui';
 
 export function NotificationWarningStrip() {
   const show = useNotificationWarning();
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.danger,
   },
-  text: { flex: 1, color: colors.danger, fontSize: 14, fontWeight: '600', textAlign: 'left' },
+  text: { flex: 1, color: colors.danger, fontSize: 14, fontFamily: fonts.semibold, textAlign: 'left' },
   button: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, backgroundColor: colors.danger },
-  buttonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  buttonText: { color: '#fff', fontSize: 13, fontFamily: fonts.semibold },
 });

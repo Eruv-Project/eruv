@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Body, Button, colors, ErrorText, Screen, Title } from '../../components/ui';
+import { Body, Button, colors, ErrorText, fonts, Screen, Title } from '../../components/ui';
 import { useCities } from '../../components/useCities';
 import { he } from '../../i18n/he';
 import type { RootStackParams } from '../../navigation/types';
@@ -89,5 +89,5 @@ const styles = StyleSheet.create({
   list: { gap: 8 },
   option: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12 },
   selected: { backgroundColor: colors.selected, borderColor: colors.primary },
-  optionText: { fontSize: 16, color: colors.text, textAlign: 'left' },
+  optionText: { fontFamily: fonts.regular, fontSize: 16, color: colors.text, textAlign: 'left' },
 });

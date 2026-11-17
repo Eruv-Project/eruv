@@ -8,7 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { ComponentProps } from 'react';
 import { View } from 'react-native';
 
-import { colors } from '../components/ui';
+import { colors, fonts } from '../components/ui';
 import { he } from '../i18n/he';
 import { useNotificationSync } from '../notifications';
 import { DisabledScreen, RejectedScreen } from '../screens/auth/BlockedScreens';
@@ -48,7 +48,7 @@ function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 12, fontFamily: fonts.semibold },
         tabBarIcon: ({ focused, color, size }) => (
           <Ionicons name={TAB_ICONS[route.name][focused ? 1 : 0]} size={size} color={color} />
         ),

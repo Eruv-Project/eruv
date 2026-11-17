@@ -10,8 +10,7 @@ import { EventIcon } from '../../components/EventIcon';
 import { tintColors, toneColors } from '../../components/tones';
 import { Button, Chip, colors, ErrorText, Field, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
-import { formatHebrewDate, hebrewDateAt } from '../../lib/hebrewDate';
-import { formatClock } from '../../lib/time';
+import { formatClock, formatDate } from '../../lib/time';
 import { useAuthStore } from '../../state/auth';
 import { eventStory } from './eventStory';
 
@@ -49,9 +48,9 @@ function customRange(fromText: string, toText: string): Range | null {
   return { key: 'custom', from: from.toISOString(), to: end.toISOString() };
 }
 
-/** "כ״ב תשרי תשפ״ז · 22:17": the Hebrew date (from sunset, the next day) and the time. */
+/** "17/11/2026 · 22:17" in Israel time. */
 export function logWhen(iso: string): string {
-  return `${formatHebrewDate(hebrewDateAt(new Date(iso)))} · ${formatClock(iso)}`;
+  return `${formatDate(iso)} · ${formatClock(iso)}`;
 }
 
 function LogRow({ item }: { item: LogItem }) {
@@ -245,7 +244,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontFamily: fonts.display, fontSize: 19, lineHeight: 25, color: colors.text, textAlign: 'left' },
   mainPill: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
@@ -253,6 +252,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   detailPill: {
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: colors.text,
     backgroundColor: colors.background,
@@ -262,10 +262,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     textAlign: 'left',
   },
-  when: { fontSize: 13, color: colors.muted, textAlign: 'left' },
+  when: { fontFamily: fonts.regular, fontSize: 13, color: colors.muted, textAlign: 'left' },
   divider: { width: 1, alignSelf: 'stretch', backgroundColor: colors.border },
   emptyContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   center: { alignItems: 'center', gap: 8 },
-  empty: { fontSize: 16, color: colors.muted },
+  empty: { fontFamily: fonts.regular, fontSize: 16, color: colors.muted },
   footer: { padding: 16 },
 });

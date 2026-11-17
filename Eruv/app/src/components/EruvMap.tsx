@@ -11,7 +11,7 @@ import { apiOrigin } from '../config';
 import { he } from '../i18n/he';
 import type { MyLocation } from '../lib/useMyLocation';
 import { MAP_HTML } from './mapHtml.generated';
-import { colors } from './ui';
+import { colors, fonts } from './ui';
 
 /** Identifies the app to the OpenStreetMap tile servers (tile usage policy). */
 export const MAP_USER_AGENT_APP = 'EruvMonitor/1.0';
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
-  toggleText: { color: colors.primary, fontSize: 15, fontWeight: '700' },
+  toggleText: { color: colors.primary, fontSize: 15, fontFamily: fonts.bold },
   // Opposite corner from Leaflet's +/- zoom buttons (top-left), so neither hides the other.
   meButton: {
     position: 'absolute',

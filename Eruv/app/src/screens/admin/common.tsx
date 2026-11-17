@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, errorTextStyle } from '../../components/ui';
+import { colors, errorTextStyle, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
 
 /** Ask before a consequential admin action (plan U9 step 4). Nothing runs on cancel. */
@@ -51,18 +51,18 @@ export function ActionButton({
 
 export const adminStyles = StyleSheet.create({
   card: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, gap: 4 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'left' },
-  cardLine: { fontSize: 14, color: colors.muted, textAlign: 'left' },
+  cardTitle: { fontSize: 16, fontFamily: fonts.semibold, color: colors.text, textAlign: 'left' },
+  cardLine: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted, textAlign: 'left' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
-  note: { fontSize: 14, color: colors.muted, textAlign: 'left' },
-  success: { fontSize: 14, color: colors.success, textAlign: 'left' },
+  note: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted, textAlign: 'left' },
+  success: { fontFamily: fonts.regular, fontSize: 14, color: colors.success, textAlign: 'left' },
   error: errorTextStyle,
 });
 
 const styles = StyleSheet.create({
   section: { gap: 8, marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'left' },
+  sectionTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.text, textAlign: 'left' },
   action: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6 },
-  actionText: { fontSize: 14, fontWeight: '600' },
+  actionText: { fontSize: 14, fontFamily: fonts.semibold },
   disabled: { opacity: 0.4 },
 });

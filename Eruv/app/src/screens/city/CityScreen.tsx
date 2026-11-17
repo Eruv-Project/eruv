@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   titles: { flex: 1 },
-  greeting: { fontSize: 15, color: colors.muted, textAlign: 'left' },
+  greeting: { fontFamily: fonts.regular, fontSize: 15, color: colors.muted, textAlign: 'left' },
   name: { fontFamily: fonts.display, fontSize: 22, lineHeight: 28, color: colors.primary, textAlign: 'left' },
   refresh: {
     width: 44,
@@ -136,10 +136,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.surface,
   },
-  link: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  link: { color: colors.primary, fontSize: 15, fontFamily: fonts.semibold },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
-  centerText: { flex: 1, textAlign: 'center', textAlignVertical: 'center', fontSize: 18, color: colors.text, padding: 24 },
-  error: { color: colors.danger, fontSize: 16 },
+  centerText: { fontFamily: fonts.regular, flex: 1, textAlign: 'center', textAlignVertical: 'center', fontSize: 18, color: colors.text, padding: 24 },
+  error: { fontFamily: fonts.regular, color: colors.danger, fontSize: 16 },
   skeleton: { flex: 1, padding: 16, gap: 12 },
   bone: { backgroundColor: colors.surface, borderRadius: 10 },
 });

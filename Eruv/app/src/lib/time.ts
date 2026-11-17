@@ -39,6 +39,11 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 });
 
+/** "DD/MM/YYYY" in Asia/Jerusalem. */
+export function formatDate(iso: string): string {
+  return dateFormat.format(new Date(iso));
+}
+
 /** "DD/MM/YYYY HH:MM" in Asia/Jerusalem, for log rows and admin details. */
 export function formatDateTime(iso: string): string {
   return `${dateFormat.format(new Date(iso))} ${formatClock(iso)}`;

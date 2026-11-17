@@ -1,7 +1,8 @@
 // Design tokens and small shared building blocks.
 //
-// Light theme, "blue with a coloured bar": a soft blue-white ground, white cards,
-// royal blue for the header bar, titles and actions, gold for the eruv's poles.
+// Light theme, clean and modern: a near-white grey ground, white cards, neutral
+// greys for text and lines, one bright blue for the header bar, titles and actions,
+// gold for the eruv's poles.
 // The icon's night navy stays only on the splash. Red and orange appear only for
 // a break and for monitoring problems, so they always mean something.
 import type { ReactNode } from 'react';
@@ -10,16 +11,16 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, 
 export const palette = {
   /** The icon's ground: the splash only. */
   night: '#0C182A',
-  page: '#F0F3F9',
+  page: '#F6F7F9',
   card: '#FFFFFF',
-  rule: '#D5DCE8',
-  blue: '#1D4E9E',
-  fiber: '#2563C4',
-  gold: '#E9A83A',
-  ink: '#141C2E',
-  mist: '#5A616F',
-  breakRed: '#C93636',
-  warn: '#B45F0E',
+  rule: '#E4E7EC',
+  blue: '#2563EB',
+  fiber: '#2563EB',
+  gold: '#F2B33D',
+  ink: '#101828',
+  mist: '#667085',
+  breakRed: '#D92D20',
+  warn: '#B54708',
 };
 
 export const colors = {
@@ -29,10 +30,10 @@ export const colors = {
   text: palette.ink,
   muted: palette.mist,
   danger: palette.breakRed,
-  warningBg: '#FDECEC',
+  warningBg: '#FEF3F2',
   border: palette.rule,
-  selected: '#DCE6F7',
-  success: '#1E7A50',
+  selected: '#EFF4FF',
+  success: '#067647',
   background: palette.page,
   surface: palette.card,
   gold: palette.gold,
@@ -41,10 +42,15 @@ export const colors = {
   onBar: '#FFFFFF',
 };
 
-/** Frank Ruhl Libre: a traditional Hebrew serif for headlines (loaded in App.tsx). */
+/** Rubik: a clean, modern Hebrew sans for all text (loaded in App.tsx). Each weight
+ * is its own family, so styles pick a family instead of setting fontWeight. */
 export const fonts = {
-  display: 'FrankRuhlLibre_700Bold',
-  displayBlack: 'FrankRuhlLibre_900Black',
+  regular: 'Rubik_400Regular',
+  medium: 'Rubik_500Medium',
+  semibold: 'Rubik_600SemiBold',
+  bold: 'Rubik_700Bold',
+  /** Screen and card titles. */
+  display: 'Rubik_700Bold',
 };
 
 export function Screen({ children }: { children: ReactNode }) {
@@ -141,8 +147,8 @@ const styles = StyleSheet.create({
   scroll: { backgroundColor: colors.background },
   screen: { padding: 24, gap: 14, flexGrow: 1 },
   title: { fontFamily: fonts.display, fontSize: 28, lineHeight: 36, color: colors.text, textAlign: 'left' },
-  body: { fontSize: 16, color: colors.text, lineHeight: 24, textAlign: 'left' },
-  error: { fontSize: 14, lineHeight: 20, color: colors.danger, textAlign: 'left' },
+  body: { fontFamily: fonts.regular, fontSize: 16, color: colors.text, lineHeight: 24, textAlign: 'left' },
+  error: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 20, color: colors.danger, textAlign: 'left' },
   input: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -150,14 +156,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    fontFamily: fonts.regular,
     fontSize: 16,
     textAlign: 'right',
     color: colors.text,
   },
   button: { backgroundColor: colors.primary, borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  buttonText: { color: colors.onPrimary, fontSize: 16, fontWeight: '700' },
+  buttonText: { color: colors.onPrimary, fontSize: 16, fontFamily: fonts.bold },
   link: { paddingVertical: 10, alignItems: 'center' },
-  linkText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  linkText: { color: colors.primary, fontSize: 15, fontFamily: fonts.semibold },
   pressed: { opacity: 0.75 },
   chip: {
     paddingHorizontal: 14,
@@ -168,8 +175,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { color: colors.text },
-  chipTextActive: { color: colors.onPrimary, fontWeight: '700' },
+  chipText: { fontFamily: fonts.regular, color: colors.text },
+  chipTextActive: { color: colors.onPrimary, fontFamily: fonts.bold },
 });
 
 /** Shared small error-text style (also used by the admin screens). */

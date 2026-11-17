@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Button, colors, Screen, Title } from '../../components/ui';
+import { Button, colors, fonts, Screen, Title } from '../../components/ui';
 import { useCities } from '../../components/useCities';
 import { he } from '../../i18n/he';
 import type { RootStackParams } from '../../navigation/types';
@@ -68,6 +68,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  label: { fontSize: 16, color: colors.muted },
-  value: { fontSize: 16, color: colors.text, fontWeight: '600' },
+  label: { fontFamily: fonts.regular, fontSize: 16, color: colors.muted },
+  value: { fontSize: 16, color: colors.text, fontFamily: fonts.semibold },
 });

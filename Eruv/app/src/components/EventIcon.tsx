@@ -33,7 +33,7 @@ function Picture({ name, color }: { name: EventIconName; color: string }) {
     case 'route':
       return (
         <G>
-          <Path d="M14 38 C 22 36, 18 28, 26 26 S 32 18, 34 16" stroke="#5A616F" strokeWidth={2} strokeDasharray="3 3" fill="none" strokeLinecap="round" />
+          <Path d="M14 38 C 22 36, 18 28, 26 26 S 32 18, 34 16" stroke="#667085" strokeWidth={2} strokeDasharray="3 3" fill="none" strokeLinecap="round" />
           <Pin x={13} y={40} color={color} />
           <Pin x={35} y={22} color={color} />
         </G>
@@ -71,7 +71,7 @@ function Picture({ name, color }: { name: EventIconName; color: string }) {
     case 'signalOn':
       return (
         <G>
-          <Path d="M24 22 L18 40 M24 22 L30 40 M20 34 H28" stroke="#5A616F" strokeWidth={2.2} strokeLinecap="round" />
+          <Path d="M24 22 L18 40 M24 22 L30 40 M20 34 H28" stroke="#667085" strokeWidth={2.2} strokeLinecap="round" />
           <Circle cx={24} cy={20} r={3} fill={color} />
           <Path d="M17 13 a10 10 0 0 0 0 14 M31 13 a10 10 0 0 1 0 14" stroke={color} strokeWidth={2.5} fill="none" strokeLinecap="round" />
           <Path d="M12 9 a16 16 0 0 0 0 22 M36 9 a16 16 0 0 1 0 22" stroke={color} strokeWidth={2.5} fill="none" strokeLinecap="round" />
@@ -104,7 +104,7 @@ function Picture({ name, color }: { name: EventIconName; color: string }) {
     case 'chart':
       return (
         <G>
-          <Path d="M9 9 V39 H40" stroke="#5A616F" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <Path d="M9 9 V39 H40" stroke="#667085" strokeWidth={2.2} fill="none" strokeLinecap="round" />
           <Path d="M13 33 L20 25 L26 29 L37 15" stroke={color} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </G>
       );

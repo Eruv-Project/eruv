@@ -1,4 +1,4 @@
-import { FrankRuhlLibre_700Bold, FrankRuhlLibre_900Black, useFonts } from '@expo-google-fonts/frank-ruhl-libre';
+import { Rubik_400Regular, Rubik_500Medium, Rubik_600SemiBold, Rubik_700Bold, useFonts } from '@expo-google-fonts/rubik';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
@@ -29,7 +29,7 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 export default function App() {
   const bootstrap = useAuthStore((s) => s.bootstrap);
   const phase = useAuthStore((s) => s.phase);
-  const [fontsLoaded, fontError] = useFonts({ FrankRuhlLibre_700Bold, FrankRuhlLibre_900Black });
+  const [fontsLoaded, fontError] = useFonts({ Rubik_400Regular, Rubik_500Medium, Rubik_600SemiBold, Rubik_700Bold });
   // A font that fails to load falls back to the system font rather than blocking the app.
   const fontsSettled = fontsLoaded || fontError !== null;
 

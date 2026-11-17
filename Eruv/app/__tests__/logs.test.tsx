@@ -67,8 +67,8 @@ describe('LogsScreen (R23)', () => {
     expect(screen.getByText(he.logs.story.disconnected)).toBeTruthy();
     expect(screen.getByTestId('event-icon-signalOff', { includeHiddenElements: true })).toBeTruthy();
     expect(screen.getByText(`${he.logs.story.checkPower} · ${he.logs.story.replayed}`)).toBeTruthy();
-    // Hebrew date and Israel time: 09:15Z on 30 Sep 2026 is 12:15 IDT, 19 Tishrei 5787.
-    expect(screen.getAllByText('י״ט תשרי תשפ״ז · 12:15').length).toBeGreaterThan(0);
+    // Date and Israel time: 09:15Z is 12:15 IDT.
+    expect(screen.getAllByText('30/09/2026 · 12:15').length).toBeGreaterThan(0);
 
     expect(screen.getByTestId('log-transition-3')).not.toHaveStyle({ opacity: 0.5 });
     expect(screen.getByTestId('log-transition-2')).toHaveStyle({ opacity: 0.5 });
