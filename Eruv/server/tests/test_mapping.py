@@ -72,6 +72,19 @@ def test_ae4_distance_below_launch_offset_is_at_the_cabinet() -> None:
     assert (m["lat"], m["lon"]) == (poles[0].lat, poles[0].lon)
 
 
+def test_a_reading_just_past_the_launch_box_is_still_the_cabinet() -> None:
+    poles = meridian_ring(FOUR)
+    near = map_break(otdr_break_m=1000.6, launch_offset_m=1000.0, poles=poles, cabinet_margin_m=10.0)
+    assert near["kind"] == "at_cabinet"
+    assert near["pole_a"] == 1
+    assert near["geo_distance_m"] == pytest.approx(0.6)
+    # Past the margin it is a break in the first span again.
+    far = map_break(otdr_break_m=1010.5, launch_offset_m=1000.0, poles=poles, cabinet_margin_m=10.0)
+    assert far["kind"] == "between"
+    # Without a margin (the default) only a reading inside the box is at the cabinet.
+    assert map_break(otdr_break_m=1000.6, launch_offset_m=1000.0, poles=poles)["kind"] == "between"
+
+
 def test_ae5_beyond_perimeter_sits_on_last_segment_at_pole_1() -> None:
     poles = meridian_ring(FOUR)
     m = map_break(otdr_break_m=1000.0 + 24000.0 + 350.0, launch_offset_m=1000.0, poles=poles)

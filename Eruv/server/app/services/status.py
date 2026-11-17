@@ -33,6 +33,14 @@ log = logging.getLogger(__name__)
 
 STATE_LOCK = threading.RLock()
 
+# A break read within the city's tolerance past the launch box (at most this many
+# metres) is placed at the cabinet: OTDR noise, not a cut in the first span.
+CABINET_MARGIN_MAX_M = 10.0
+
+
+def cabinet_margin_m(city: City) -> float:
+    return min(city.break_tolerance_m, CABINET_MARGIN_MAX_M)
+
 
 class Pending:
     """Status events written in this unit of work, published after commit."""
@@ -187,7 +195,8 @@ def apply_result(db: Session, bus: EventBus, device: Device, result: Result, now
         mapping = None
         if step.state == LineState.BREAK:
             mapping = map_break(
-                result.end_event_distance_m, city.launch_offset_m, pole_points(db, city.id), city.ring_closed
+                result.end_event_distance_m, city.launch_offset_m, pole_points(db, city.id), city.ring_closed,
+                cabinet_margin_m=cabinet_margin_m(city),
             )
         pending.record(
             db, city, StatusDimension.LINE, city.line_state, step.state, now,

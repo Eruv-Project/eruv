@@ -148,3 +148,14 @@ describe('LogsScreen (R23)', () => {
     expect(custom.query.to).toBe(new Date(2026, 8, 11).toISOString());
   });
 });
+
+describe('eventStory', () => {
+  const { eventStory } = require('../src/screens/logs/eventStory');
+  const cabinet = (geo: number) =>
+    eventStory(transition(9, { from_state: 'BREAK', mapping: { kind: 'at_cabinet', pole_a: 1, pole_b: null, lat: 31.2, lon: 34.7, geo_distance_m: geo, offset_from_a_m: 0 } }));
+
+  it('places a break a little past the launch box at the cabinet, saying why', () => {
+    expect(cabinet(0.58)).toMatchObject({ icon: 'cabinet', title: he.logs.story.breakMoved, main: he.city.breakAtCabinet, detail: he.logs.story.nearCabinet('0.6') });
+    expect(cabinet(-120)).toMatchObject({ icon: 'cabinet', detail: he.logs.story.atStart });
+  });
+});

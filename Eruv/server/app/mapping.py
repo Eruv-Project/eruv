@@ -8,7 +8,9 @@ interpolation of latitude and longitude (segments are tens of metres long).
 
 Result kinds (JSON-able dict, stored on the BREAK status event):
 - ``between``: on segment pole_a -> pole_b, ``offset_from_a_m`` past pole_a.
-- ``at_cabinet``: distance shorter than the launch box (AE4); pole 1, pole_b None.
+- ``at_cabinet``: distance shorter than the launch box (AE4), or past it by no more
+  than ``cabinet_margin_m`` (an OTDR reading a metre or two past the box is the box
+  itself, not the first span); pole 1, pole_b None.
 - ``beyond_ring``: longer than the ring perimeter (AE5); placed at the end of the
   last segment (pole N -> pole 1 on a closed ring, pole N-1 -> pole N on an open
   line; t = 1).
@@ -67,11 +69,15 @@ def _segments(ring: list[PolePoint], closed: bool) -> list[tuple[PolePoint, Pole
 
 
 def map_break(
-    otdr_break_m: float, launch_offset_m: float, poles: Sequence[PolePoint], closed: bool = True
+    otdr_break_m: float,
+    launch_offset_m: float,
+    poles: Sequence[PolePoint],
+    closed: bool = True,
+    cabinet_margin_m: float = 0.0,
 ) -> dict[str, Any]:
     geo = otdr_break_m - launch_offset_m
     ring = sorted(poles, key=lambda p: p.number)
-    if geo < 0 and ring:
+    if (geo < 0 or geo <= cabinet_margin_m) and ring:
         first = ring[0]
         return _mapping("at_cabinet", geo, first, None, first.lat, first.lon, 0.0)
     if len(ring) < 2:

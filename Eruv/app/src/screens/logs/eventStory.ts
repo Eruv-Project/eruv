@@ -34,7 +34,9 @@ function breakIcon(mapping: BreakMapping | null): EventIconName {
 function breakPlace(mapping: BreakMapping | null): { main: string | null; detail: string | null } {
   const main = mapping && mapping.kind !== 'unknown' ? breakTitle(mapping) : null;
   const distance = mapping?.geo_distance_m ?? null;
-  if (mapping?.kind === 'at_cabinet') return { main, detail: s.atStart };
+  if (mapping?.kind === 'at_cabinet') {
+    return { main, detail: distance !== null && distance > 0 ? s.nearCabinet(formatNumber(distance)) : s.atStart };
+  }
   return { main, detail: distance !== null && distance > 0 ? s.fromStart(formatNumber(distance)) : null };
 }
 
