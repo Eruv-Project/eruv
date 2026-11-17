@@ -41,7 +41,7 @@ describe('LogsScreen (R23)', () => {
       body: {
         items: [
           transition(3),
-          transition(2, { from_state: 'SUSPECT_BREAK', to_state: 'OK', mapping: null, detail: 'suspect reading not confirmed' }),
+          transition(2, { from_state: 'SUSPECT_BREAK', to_state: 'OK', mapping: null, detail: 'suspect reading not confirmed: end event 1050.2 m' }),
           transition(1, { dimension: 'device', from_state: 'ONLINE', to_state: 'DISCONNECTED', mapping: null, replayed: true }),
         ],
         next_cursor: null,
@@ -57,12 +57,18 @@ describe('LogsScreen (R23)', () => {
     expect(call.query.cursor).toBeUndefined();
     expect(call.headers.Authorization).toBe('Bearer access-1');
 
-    expect(screen.getByText(he.logs.transition('קו', 'תקין', 'קרע'))).toBeTruthy();
+    // Plain words, a picture per event, and no raw server text.
+    expect(screen.getByText(he.logs.story.breakFound)).toBeTruthy();
     expect(screen.getByText(he.city.breakBetween(2, 3))).toBeTruthy();
-    expect(screen.getByText(he.logs.suspectNotConfirmed)).toBeTruthy();
-    expect(screen.getByText(he.logs.replayed)).toBeTruthy();
-    // Time in Israel: 09:15Z is 12:15 IDT.
-    expect(screen.getAllByText(/30\/09\/2026 12:15/).length).toBeGreaterThan(0);
+    expect(screen.getByText(he.logs.story.fromStart('400'))).toBeTruthy();
+    expect(screen.getByTestId('event-icon-route', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText(he.logs.story.suspectGone)).toBeTruthy();
+    expect(screen.queryByText(/suspect reading/)).toBeNull();
+    expect(screen.getByText(he.logs.story.disconnected)).toBeTruthy();
+    expect(screen.getByTestId('event-icon-signalOff', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText(`${he.logs.story.checkPower} · ${he.logs.story.replayed}`)).toBeTruthy();
+    // Hebrew date and Israel time: 09:15Z on 30 Sep 2026 is 12:15 IDT, 19 Tishrei 5787.
+    expect(screen.getAllByText('י״ט תשרי תשפ״ז · 12:15').length).toBeGreaterThan(0);
 
     expect(screen.getByTestId('log-transition-3')).not.toHaveStyle({ opacity: 0.5 });
     expect(screen.getByTestId('log-transition-2')).toHaveStyle({ opacity: 0.5 });
@@ -119,14 +125,15 @@ describe('LogsScreen (R23)', () => {
     });
     await render(<LogsScreen clock={clock} />);
     await fireEvent.press(screen.getByTestId('log-type-results'));
-    expect(await screen.findByText(he.logs.result(41))).toBeTruthy();
-    expect(screen.getByText(he.logs.endEvent('5,120.5'), { exact: false })).toBeTruthy();
+    expect(await screen.findByText(he.logs.story.result(41))).toBeTruthy();
+    expect(screen.getByText(he.logs.story.measured('5,120.5'))).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('log-type-faults'));
-    expect(await screen.findByText(he.logs.fault('otdr_timeout'))).toBeTruthy();
+    expect(await screen.findByText(he.logs.story.faultTimeout)).toBeTruthy();
+    expect(screen.getByText(he.logs.story.fault)).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('log-range-month'));
-    await screen.findByText(he.logs.fault('otdr_timeout'));
+    await screen.findByText(he.logs.story.faultTimeout);
     const monthCall = logCalls()[logCalls().length - 1];
     expect(monthCall.query.from).toBe(new Date(NOW - 30 * DAY).toISOString());
     expect(monthCall.query.type).toBe('faults');
@@ -135,7 +142,7 @@ describe('LogsScreen (R23)', () => {
     await fireEvent.changeText(screen.getByTestId('log-from'), '2026-09-01');
     await fireEvent.changeText(screen.getByTestId('log-to'), '2026-09-10');
     await fireEvent.press(screen.getByTestId('log-apply-range'));
-    await screen.findByText(he.logs.fault('otdr_timeout'));
+    await screen.findByText(he.logs.story.faultTimeout);
     const custom = logCalls()[logCalls().length - 1];
     expect(custom.query.from).toBe(new Date(2026, 8, 1).toISOString());
     expect(custom.query.to).toBe(new Date(2026, 8, 11).toISOString());

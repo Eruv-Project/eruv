@@ -97,7 +97,7 @@ describe('StatusBanner (R16)', () => {
 
   it.each([
     ['between', BETWEEN, 'קרע בין עמוד 57 לעמוד 58', 'ניווט ב-Waze'],
-    ['at_cabinet', AT_CABINET, 'קרע בארון הבקרה / launch box', 'ניווט ב-Waze'],
+    ['at_cabinet', AT_CABINET, 'קרע בארון הבקרה', 'ניווט ב-Waze'],
     ['beyond_ring', BEYOND, 'קרע מעבר לטבעת הממופה (מיקום משוער)', 'ניווט ב-Waze (משוער)'],
   ])('break variant %s reads correctly and offers Waze', async (_kind, mapping, title, nav) => {
     await show(breakStatus(mapping));

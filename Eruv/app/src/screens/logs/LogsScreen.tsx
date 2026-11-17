@@ -6,13 +6,14 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 
 import { api, type LogItem, type LogType } from '../../api/client';
 import { CitySwitcher } from '../../components/CitySwitcher';
-import { breakTitle } from '../../components/StatusBanner';
-import { toneColors } from '../../components/tones';
-import { Button, Chip, colors, ErrorText, Field } from '../../components/ui';
+import { EventIcon } from '../../components/EventIcon';
+import { tintColors, toneColors } from '../../components/tones';
+import { Button, Chip, colors, ErrorText, Field, fonts } from '../../components/ui';
 import { he } from '../../i18n/he';
-import { formatNumber } from '../../lib/format';
-import { formatDateTime } from '../../lib/time';
+import { formatHebrewDate, hebrewDateAt } from '../../lib/hebrewDate';
+import { formatClock } from '../../lib/time';
 import { useAuthStore } from '../../state/auth';
+import { eventStory } from './eventStory';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 50;
@@ -48,69 +49,29 @@ function customRange(fromText: string, toText: string): Range | null {
   return { key: 'custom', from: from.toISOString(), to: end.toISOString() };
 }
 
-const stateLabel = (state: string) => he.logs.states[state] ?? state;
-
-/** Suspect readings and backlog replays are context, not alerts: shown muted. */
-function isMuted(item: LogItem): boolean {
-  if (item.replayed) return true;
-  return item.kind === 'transition' && (item.from_state === 'SUSPECT_BREAK' || item.to_state === 'SUSPECT_BREAK');
-}
-
-function describe(item: LogItem): { title: string; lines: string[]; color: string } {
-  switch (item.kind) {
-    case 'transition': {
-      const lines: string[] = [];
-      if (item.to_state === 'BREAK') lines.push(breakTitle(item.mapping));
-      if (item.detail) {
-        lines.push(item.detail === 'suspect reading not confirmed' ? he.logs.suspectNotConfirmed : item.detail);
-      }
-      const color =
-        item.to_state === 'BREAK'
-          ? toneColors.break
-          : item.to_state === 'DISCONNECTED' || item.to_state === 'FAULT'
-            ? toneColors.warning
-            : item.to_state === 'OK' || item.to_state === 'ONLINE'
-              ? toneColors.ok
-              : toneColors.neutral;
-      return {
-        title: he.logs.transition(he.logs.dimension[item.dimension], stateLabel(item.from_state), stateLabel(item.to_state)),
-        lines,
-        color,
-      };
-    }
-    case 'result': {
-      const parts = [
-        item.end_event_distance_m !== null ? he.logs.endEvent(formatNumber(item.end_event_distance_m)) : he.logs.noEndEvent,
-      ];
-      if (item.fiber_length_m !== null) parts.push(he.logs.fiberLength(formatNumber(item.fiber_length_m)));
-      if (item.link_loss_db !== null) parts.push(he.logs.linkLoss(formatNumber(item.link_loss_db)));
-      return { title: he.logs.result(item.seq), lines: [parts.join(' · ')], color: toneColors.neutral };
-    }
-    case 'fault': {
-      const detail = [item.fault_detail, item.fault_status_code !== null ? he.logs.faultCode(item.fault_status_code) : null]
-        .filter(Boolean)
-        .join(' · ');
-      return { title: he.logs.fault(item.fault_kind), lines: detail ? [detail] : [], color: toneColors.warning };
-    }
-  }
+/** "כ״ב תשרי תשפ״ז · 22:17": the Hebrew date (from sunset, the next day) and the time. */
+export function logWhen(iso: string): string {
+  return `${formatHebrewDate(hebrewDateAt(new Date(iso)))} · ${formatClock(iso)}`;
 }
 
 function LogRow({ item }: { item: LogItem }) {
-  const { title, lines, color } = describe(item);
-  const muted = isMuted(item);
+  const story = eventStory(item);
+  const color = story.tone === 'neutral' ? colors.text : toneColors[story.tone];
   return (
-    <View testID={`log-${item.kind}-${item.id}`} style={[styles.row, muted && styles.muted]}>
-      <View style={[styles.dot, { backgroundColor: color }]} />
-      <View style={styles.rowBody}>
-        <Text style={styles.rowTitle}>{title}</Text>
-        {lines.map((line) => (
-          <Text key={line} style={styles.rowLine}>
-            {line}
-          </Text>
-        ))}
-        {item.replayed ? <Text style={styles.rowLine}>{he.logs.replayed}</Text> : null}
-        <Text style={styles.rowTime}>{formatDateTime(item.occurred_at)}</Text>
+    <View testID={`log-${item.kind}-${item.id}`} style={[styles.card, story.muted && styles.muted]}>
+      <View style={styles.cardBody}>
+        <View style={styles.titleRow}>
+          <View style={[styles.dot, { backgroundColor: toneColors[story.tone] }]} />
+          <Text style={styles.cardTitle}>{story.title}</Text>
+        </View>
+        {story.main ? (
+          <Text style={[styles.mainPill, { backgroundColor: tintColors[story.tone].bg, color }]}>{story.main}</Text>
+        ) : null}
+        {story.detail ? <Text style={styles.detailPill}>{story.detail}</Text> : null}
+        <Text style={styles.when}>{logWhen(item.occurred_at)}</Text>
       </View>
+      <View style={styles.divider} />
+      <EventIcon name={story.icon} tone={story.tone} />
     </View>
   );
 }
@@ -265,20 +226,44 @@ const styles = StyleSheet.create({
   filters: { padding: 8, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   custom: { gap: 8 },
-  row: {
+  card: {
     flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: 12,
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   muted: { opacity: 0.5 },
-  dot: { width: 10, height: 10, borderRadius: 5, marginTop: 6 },
-  rowBody: { flex: 1, gap: 2 },
-  rowTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'left' },
-  rowLine: { fontSize: 14, color: colors.text, textAlign: 'left' },
-  rowTime: { fontSize: 13, color: colors.muted, textAlign: 'left' },
+  cardBody: { flex: 1, gap: 6, alignItems: 'flex-start' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  cardTitle: { fontFamily: fonts.display, fontSize: 19, lineHeight: 25, color: colors.text, textAlign: 'left' },
+  mainPill: {
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    overflow: 'hidden',
+    textAlign: 'left',
+  },
+  detailPill: {
+    fontSize: 14,
+    color: colors.text,
+    backgroundColor: colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    overflow: 'hidden',
+    textAlign: 'left',
+  },
+  when: { fontSize: 13, color: colors.muted, textAlign: 'left' },
+  divider: { width: 1, alignSelf: 'stretch', backgroundColor: colors.border },
   emptyContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   center: { alignItems: 'center', gap: 8 },
   empty: { fontSize: 16, color: colors.muted },
